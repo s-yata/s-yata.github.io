@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Snappy の使い方</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+ </head>
+ <body>
+  <div id="header">
+   <div class="left">How to use Snappy</div>
+   <div class="right">Last modified: 16 March 2012</div>
+   <div class="end"></div>
+  </div><!-- header -->
+  <div id="body">
+   <h1>Snappy の使い方</h1>
+   <p id="authors">
+    <span class="author">矢田 晋</span>
+   </p><!-- authors -->
+   <p id="abstract">
+    <span id="heading">Abstract: </span>
+     Snappy は高速な圧縮アルゴリズムのライブラリです．zlib や libbzip2 などの有名な圧縮ライブラリと比べると，圧縮率は低いものの，圧縮・伸長にかかる時間を桁一つ短縮することができます．圧縮・伸長速度が HDD の転送速度を上回るため，ディスク使用量や通信量の削減だけでなく，I/O の高速化を目的として利用することもできます．本記事は，C/C++ から Snappy を利用する方法の解説になっています．
+   </p><!-- abstract -->
+   <div class="section">
+    <h2><a name="introduction">はじめに</a></h2>
+    <p>
+     <a href="http://snappy.googlecode.com/svn/trunk/README">最新のドキュメント</a>は Subversion のリポジトリ，および<a href="http://code.google.com/p/snappy/">公式サイト</a>からダウンロードできるソースコードに含まれています．また，Snappy のヘッダである <kbd>snappy.h</kbd> と <kbd>snappy-c.h</kbd> には，C/C++ API の説明がコメントとして記述されています．
+    </p>
+    <ul>
+     <li>
+      <a href="http://code.google.com/p/snappy/">http://code.google.com/p/snappy/（snappy - A fast compressor/decompressor - Google Project Hosting）</a>
+      <ul>
+       <li>Snappy の公式サイトです．<a href="http://code.google.com/p/snappy/downloads/list">ソースコード</a>をダウンロードしたり，<a href="http://code.google.com/p/snappy/source/checkout">リポジトリへのアクセス方法</a>を確認したりできます．
+      </ul>
+     </li>
+    </ul>
+    <p>
+     Snappy のインタフェースは zlib や libbzip2 と比べて単純です．圧縮・伸長に必要な領域の大きさを求める関数と，圧縮・伸長をおこなう関数しかありません．あまりにも単純なためか，わざわざ Snappy の使い方を解説するサイトは見当たりません．英語アレルギーを患っている方でなければ，<kbd>snappy.h</kbd> と <kbd>snappy-c.h</kbd> を見るだけで，簡単に使えるようになると思います．
+    </p>
+    <p>
+     以下，<a href="#install">Snappy のインストール方法</a>を紹介した後，<a href="#c">C 言語における圧縮・伸長</a>と <a href="#cplusplus">C++ における圧縮・伸長</a>について説明します．また，Snappy を用いて圧縮・伸長をおこなうプログラムの<a href="#sample">サンプルコード</a>を用意しました．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="install">インストール</a></h2>
+    <div class="subsection">
+     <h3>Debian 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo apt-get install libsnappy-dev</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ sudo aptitude install libsnappy-dev</pre>
+     </div><!-- float -->
+     <p>
+      Debian 系の環境であれば，<kbd>apt-get</kbd> もしくは <kbd>aptitude</kbd> を使って簡単にインストールできます．インストールには root 権限が必要なので，必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>Red Hat 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo yum install snappy-devel</pre>
+     </div><!-- float -->
+     <p>
+      Red Hat や CentOS であれば，<kbd>yum</kbd> を使って簡単にインストールできます．こちらも必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ソースコードからのインストール</h3>
+     <div class="float">
+      <pre class="console">$ wget http://snappy.googlecode.com/files/snappy-1.0.5.tar.gz
+$ tar zxf snappy-1.0.5.tar.gz
+$ cd snappy-1.0.5
+$ ./configure CPPFLAGS=-DNDEBUG
+$ make
+$ make check
+$ sudo make install</pre>
+     </div><!-- float -->
+     <p>
+      ソースコードの tarball は<a href="http://www.zlib.net/">公式サイト</a>からダウンロードできます．ブラウザや <kbd>wget</kbd> により tarball をダウンロードした後は，<kbd>configure</kbd>, <kbd>make</kbd>, <kbd>make check</kbd>, <kbd>make install</kbd> という一般的な手順でインストールします．Snappy を軽く試してみるのであれば，<kbd>make check</kbd> まで終わった時点で，<kbd>snappy-c.h</kbd>, <kbd>libsnappy.a</kbd> のみをコピーして使うことも可能です．
+     </p>
+     <p>
+      デバッグを目的とするのでなければ，<kbd>configure</kbd> に対して <kbd>CPPFLAGS=-DNDEBUG</kbd> というオプションを渡すことで <code>assert()</code> を無効にしてください．<code>assert()</code> が有効な状態では圧縮時間が長くなってしまいます．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>インストールの確認</h3>
+     <div class="float">
+      <pre class="code">// test.c
+#include &lt;snappy-c.h&gt;
+int main(void) {
+  snappy_max_compressed_length(100);
+  return 0;
+}</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ gcc -Wall test.c -lsnappy</pre>
+     </div><!-- float -->
+     <p>
+      簡単なソースコードをコンパイル・リンクしてみれば，Snappy が問題なくインストールされているかどうか分かります．リンクにおいては，Snappy を指定するオプション（<kbd>-lsnappy</kbd>）が必要になります．
+     </p>
+     <p>
+      サンプルは C 言語のコードになっていますが，Snappy が C++ により実装されているため，環境によっては <kbd>-lstdc++</kbd> というオプションが必要になるかもしれません．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="c">C 言語における圧縮・伸長</a></h2>
+    <div class="subsection">
+     <h3>圧縮</h3>
+     <div class="float">
+      <pre class="code">#include &lt;snappy-c.h&gt;</pre>
+     </div><!-- float -->
+     <p>
+      Snappy による圧縮の手順は，<code>snappy_max_compressed_length()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>snappy_compress()</code> を呼び出すだけです．圧縮前後のデータをすべてメモリ上に展開するため，入力データが大きいときやメモリの使用量を節約したいときは，入力データを分割して圧縮するなどの工夫が必要となります．
+     </p>
+     <div class="float">
+      <pre class="code">size_t snappy_max_compressed_length(size_t source_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy_max_compressed_length()</code> の第 1 引数である <var>source_length</var> には入力データのサイズを指定するようになっています．出力バッファに割り当てるべき領域のサイズが戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">snappy_status snappy_compress(const char *input,
+                              size_t input_length,
+                              char *compressed,
+                              size_t *compressed_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy_compress()</code> の第 1 引数である <var>input</var> と第 2 引数である <var>input_length</var> には入力データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>compressed</var> に出力バッファの開始アドレスを指定するのは入力と同様ですが，第 4 引数の <var>compressed_length</var> には出力バッファのサイズを格納した変数へのポインタを渡すようになっています．圧縮が成功したときは，<var>compressed_length</var> の指す変数が圧縮後のサイズによって上書きされます．<code>snappy_compress()</code> の戻り値は，圧縮に成功したときは <var>SNAPPY_OK</var> となります．<var>compressed_length</var> の指す値が <code>snappy_max_compressed_length()</code> の返す値より小さければ圧縮に失敗し，戻り値は <var>SNAPPY_BUFFER_TOO_SMALL</var> となります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>伸長</h3>
+     <div class="float">
+      <pre class="code">#include &lt;snappy-c.h&gt;</pre>
+     </div><!-- float -->
+     <p>
+      Snappy による伸長の手順は，<code>snappy_uncompressed_length()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>snappy_uncompress()</code> を呼び出すだけです．圧縮データのサイズが要求されるため，圧縮の段階でサイズを保存しておく必要があります．
+     </p>
+     <div class="float">
+      <pre class="code">snappy_status snappy_uncompressed_length(const char *compressed,
+                                         size_t compressed_length,
+                                         size_t *result);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy_uncompressed_length()</code> の第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．第 3 引数である <var>result</var> には圧縮前のサイズを受け取る変数へのポインタを指定するようになっています．サイズの取得に成功すれば <var>SNAPPY_OK</var> が戻り値になります．入力が正しい圧縮データでなければ <var>SNAPPY_INVALID_INPUT</var> が戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">snappy_status snappy_uncompress(const char *compressed,
+                                size_t compressed_length,
+                                char *uncompressed,
+                                size_t *uncompressed_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy_uncompress()</code> の第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>uncompressed</var> に出力バッファの開始アドレスを指定するのは入力と同様ですが，第 4 引数の <var>uncompressed_length</var> には出力バッファのサイズを格納した変数へのポインタを渡すようになっています．圧縮が成功したときは，<var>uncompressed_length</var> の指す変数が圧縮前のサイズによって上書きされます．<code>snappy_uncompress()</code> の戻り値は，伸長に成功したときは <var>SNAPPY_OK</var> となります．<var>uncompressed_length</var> の指す値が <code>snappy_uncompressed_length()</code> の返す値より小さければ伸長に失敗し，戻り値は <var>SNAPPY_BUFFER_TOO_SMALL</var> となります．入力が正しい圧縮データでなければ <var>SNAPPY_INVALID_INPUT</var> が戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">snappy_status snappy_validate_compressed_buffer(const char *compressed,
+                                                size_t compressed_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy_validate_compressed_buffer()</code> を使うことにより，圧縮データの正当性を高速に判定できます．実際に伸長する方法と比べると，通常 4 倍以上高速です．第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．正当であると判定されたときは <var>SNAPPY_OK</var> が戻り値になり，正当でないと判定されたときは <var>SNAPPY_INVALID_INPUT</var> が戻り値になります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="cplusplus">C++ における圧縮・伸長</a></h2>
+    <div class="subsection">
+     <h3>圧縮</h3>
+     <div class="float">
+      <pre class="code">#include &lt;snappy.h&gt;</pre>
+     </div><!-- float -->
+     <p>
+      C++ における圧縮の手順は，<code>snappy::Compress()</code> を呼び出すだけです．C 言語と同様に <code>snappy::MaxCompressedLength()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>snappy::RawCompress()</code> を呼び出すという手順でも圧縮できますが，引数と戻り値が異なるので注意してください．
+     </p>
+     <div class="float">
+      <pre class="code">size_t snappy::Compress(const char *input, size_t input_length, string *output);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::Compress</code> の第 1 引数である <var>input</var> と第 2 引数である <var>input_length</var> には入力データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>output</var> には出力先として用いる <code>std::string</code> へのポインタを指定するようになっています．圧縮後のサイズが戻り値になります．<code>std::string</code> の拡張に失敗したときは例外を送出するため，必要に応じて <code>try</code>, <code>catch</code> を使うようにしてください．
+     </p>
+     <div class="float">
+      <pre class="code">size_t snappy::MaxCompressedLength(size_t source_bytes);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::MaxCompressedLength()</code> の第 1 引数である <var>source_bytes</var> には入力データのサイズを指定するようになっています．出力バッファに割り当てるべき領域のサイズが戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">void snappy::RawCompress(const char *input,
+                         size_t input_length,
+                         char *compressed,
+                         size_t *compressed_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::RawCompress()</code> の第 1 引数である <var>input</var> と第 2 引数である <var>input_length</var> には入力データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>compressed</var> に出力バッファの開始アドレスを指定するのは入力と同様ですが，第 4 引数の <var>compressed_length</var> には圧縮後のサイズを受け取る変数へのポインタを渡すようになっています．<code>snappy_compress()</code> とは異なり，出力バッファのサイズを確認することはなく，戻り値はありません．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>伸長</h3>
+     <div class="float">
+      <pre class="code">#include &lt;snappy.h&gt;</pre>
+     </div><!-- float -->
+     <p>
+      C++ における伸長の手順は，<code>snappy::Uncompress()</code> を呼び出すだけです．C 言語と同様に <code>snappy::GetUncompressedLength()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>snappy::RawUncompress()</code> を呼び出すという手順でも伸長できますが，引数と戻り値が異なるので注意してください．
+     </p>
+     <div class="float">
+      <pre class="code">bool snappy::Uncompress(const char *compressed, size_t compressed_length,
+                        string *uncompressed);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::Uncompress</code> の第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>uncompressed</var> には出力先として用いる <code>std::string</code> へのポインタを指定するようになっています．圧縮に成功すれば <var>true</var> が戻り値になり，失敗すれば <var>false</var> が戻り値になります．<code>std::string</code> の拡張に失敗したときは例外を送出するため，必要に応じて <code>try</code>, <code>catch</code> を使うようにしてください．
+     </p>
+     <div class="float">
+      <pre class="code">bool snappy::GetUncompressedLength(const char *compressed, size_t compressed_length,
+                                   size_t *result);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::GetUncompressedLength()</code> の第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．第 3 引数である <var>result</var> には圧縮前のサイズを受け取る変数へのポインタを指定するようになっています．サイズの取得に成功すれば <var>true</var> が戻り値になり，失敗すれば <var>false</var> が戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">bool snappy::RawUncompress(const char *compressed, size_t compressed_length,
+                           char *uncompressed);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::RawUncompress()</code> の第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．第 3 引数の <var>uncompressed</var> には出力バッファの開始アドレスを指定するようになっています．出力バッファのサイズが <code>snappy::GetUncompressedLength()</code> 以上であることは呼び出し側で確認する必要があります．圧縮に成功すれば <var>true</var> が戻り値になり，失敗すれば <var>false</var> が戻り値になります．
+     </p>
+     <div class="float">
+      <pre class="code">bool snappy::IsValidCompressedBuffer(const char* compressed,
+                                     size_t compressed_length);</pre>
+     </div><!-- float -->
+     <p>
+      <code>snappy::IsValidCompressedBuffer()</code> を使うことにより，圧縮データの正当性を高速に判定できます．実際に伸長する方法と比べると，通常 4 倍以上高速です．第 1 引数である <var>compressed</var> と第 2 引数である <var>compressed_length</var> には圧縮データの開始アドレスとサイズを指定するようになっています．正当であると判定されたときは <var>true</var> が戻り値になり，正当でないと判定されたときは <var>false</var> が戻り値になります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="sample">サンプルコード</a></h2>
+    <div class="float">
+     <pre class="console">$ gcc -Wall -O2 -std=c99 snappy-test.c -lsnappy -o snappy-test</pre>
+    </div><!-- float -->
+    <div class="float">
+     <pre class="console">$ g++ -Wall -O2 snappy-test.cc -lsnappy -o snappy-test</pre>
+    </div><!-- float -->
+    <p>
+     Snappy 形式の圧縮・伸長をおこなうプログラムのサンプルコードとして <a href="snappy-test.c">snappy-test.c</a> と <a href="snappy-test.cc">snappy-test.cc</a> を用意しました．C99 の機能を使っているので，<kbd>gcc</kbd> には <kbd>-std=c99</kbd> を渡すようにしてください．
+    </p>
+    <div class="float">
+     <pre class="console">$ ./snappy-test --help
+Usage: ./snappy-test [OPTION]... [FILE]...
+Options:
+  -c, --compress    圧縮します (default)
+  -u, --uncompress  伸長します
+  -o, --output=[FILE]  出力ファイルを指定します (default: stdout)
+  -h, --help     このヘルプを表示します</pre>
+    </div><!-- float -->
+    <p>
+     コマンドライン引数による圧縮・伸長の切り替えが可能になっています．<kbd>-h</kbd> もしくは <kbd>--help</kbd> をオプションとして渡すことにより，コマンドライン引数の一覧を確認することができます．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="conclusion">おわりに</a></h2>
+    <p>
+     本記事では C/C++ における Snappy の使い方を説明しました．C/C++ 以外における Snappy の使い方については<a href="http://code.google.com/p/snappy/">公式サイト</a>にあるリンク集をご利用ください．
+    </p>
+   </div><!-- section -->
+  </div><!-- body -->
+  <div id="footer">
+   <div class="left">How to use Snappy</div>
+   <div class="right">
+  ‮moc.liamg@atay.umusus‭
+   </div>
+   <div class="end"></div>
+  </div><!-- footer -->
+ </body>
+</html>

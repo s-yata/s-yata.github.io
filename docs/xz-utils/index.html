@@ -1,0 +1,384 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>XZ Utils の使い方</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+ </head>
+ <body>
+  <div id="header">
+   <div class="left">How to use XZ Utils</div>
+   <div class="right">Last modified: 8 March 2010</div>
+   <div class="end"></div>
+  </div><!-- header -->
+  <div id="body">
+   <h1>XZ Utils の使い方</h1>
+   <p id="authors">
+    <span class="author">矢田 晋</span>
+   </p><!-- authors -->
+   <p id="abstract">
+    <span id="heading">Abstract: </span>
+     XZ Utils は LZMA Utils の後継となるソフトウェアであり，Lempel–Ziv–Markov chain Algorithm（LZMA）の改良版である LZMA2 の実装になっています．圧縮には時間がかかるものの，bzip2 を上回る圧縮率を誇り，高速に伸長できるという利点から，tar に採用されるなど，普及が進んでいます．本記事は，C 言語から XZ Utils を利用する方法の解説になっています．
+   </p><!-- abstract -->
+   <div class="section">
+    <h2><a name="introduction">はじめに</a></h2>
+    <p>
+     XZ Utils のドキュメントは，<a href="http://tukaani.org/xz/">公式サイト</a>で配布されているアーカイブに同梱されています．FAQ，開発履歴，圧縮形式の解説は <kbd>doc/</kbd> にあり，ライブラリのマニュアルは，<kbd>src/liblzma/api/lzma/</kbd> にあるヘッダに記述されています．XZ Utils がインストールされている状況では，<code>#include</code> するヘッダは <code>&lt;lzma.h&gt;</code> となり，マニュアルについては <kbd>/usr/include/lzma/*.h</kbd> を参照することになります．
+    </p>
+    <ul>
+     <li>
+      <a href="http://tukaani.org/xz/">http://tukaani.org/xz/（XZ Utils）</a>
+      <ul>
+       <li>XZ Utils の公式サイトです．ソースコードとマニュアルを含むアーカイブをダウンロードすることができます．
+      </ul>
+     </li>
+    </ul>
+    <p>
+     zlib と libbzip2 にはファイル入出力を簡単にするインタフェースが用意されていますが，XZ Utils には同様のインタフェースが用意されていません．将来的には，gzip 形式，bzip2 形式，xz 形式のファイルを同じように操作できるライブラリを提供することが計画されているようです．
+    </p>
+    <p>
+     以下，<a href="#install">XZ Utils のインストール方法</a>を紹介した後，メモリ上での圧縮・ について，<a href="#code">基本的な使い方</a>を説明します．また，XZ Utils を用いて圧縮・伸長をおこなうプログラムの<a href="#sample">サンプルコード</a>を用意しました．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="install">インストール</a></h2>
+    <div class="subsection">
+     <h3>Debian 系の環境における XZ Utils のインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo aptitude install xz-utils liblzma-dev</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ sudo apt-get install xz-utils liblzma-dev</pre>
+     </div><!-- float -->
+     <p>
+      Debian 系の環境であれば，<kbd>aptitude</kbd> を使って簡単にインストールできます．インストールには root 権限が必要なので，必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．古い環境であれば，<kbd>apt-get</kbd> になるかもしれません．<kbd>xz-utils</kbd> はコマンドラインツールのパッケージであり，<kbd>liblzma-dev</kbd> が開発用パッケージになっています．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>Red Hat 系の環境における XZ Utils のインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo yum install xz xz-devel</pre>
+     </div><!-- float -->
+     <p>
+      Red Hat や CentOS であれば，<kbd>yum</kbd> を使って簡単にインストールできます．こちらも必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．<kbd>xz</kbd> はコマンドラインツールのパッケージであり，<kbd>xz-devel</kbd> が開発用パッケージになっています．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ソースコードからのインストール</h3>
+     <div class="float">
+      <pre class="console">$ wget http://tukaani.org/xz/xz-5.0.3.tar.gz
+$ tar zxf xz-5.0.3.tar.gz
+$ cd xz-5.0.3
+$ ./configure
+$ make
+$ make check
+$ sudo make install</pre>
+     </div><!-- float -->
+     <p>
+      ソースコードの tarball は<a href="http://tukaani.org/xz/">公式サイト</a>からダウンロードできます．ブラウザや <kbd>wget</kbd> により tarball をダウンロードした後は，<kbd>configure</kbd>, <kbd>make</kbd>, <kbd>make check</kbd>, <kbd>make install</kbd> という一般的な手順でインストールします．xz を軽く試してみるのであれば，<kbd>make check</kbd> まで終わった時点で，<kbd>src/liblzma/api/lzma*</kbd> と <kbd>src/liblzma/.libs/liblzma.a</kbd> のみをコピーして使うことも可能です．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>インストールの確認</h3>
+     <div class="float">
+      <pre class="code">// test.c
+#include &lt;lzma.h&gt;
+int main(void) {
+  lzma_stream strm = LZMA_STREAM_INIT;
+  lzma_easy_encoder(&amp;strm, 6, LZMA_CHECK_CRC64);
+  lzma_end(&amp;strm);
+  return 0;
+}</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ gcc -Wall test.c -llzma -Dlzma_attr_warn_unused_result=</pre>
+     </div><!-- float -->
+     <p>
+      簡単なソースコードをコンパイル・リンクしてみれば，XZ Utils が問題なくインストールされているかどうか分かります．リンクにおいては，XZ Utils を指定するオプション（<kbd>-llzma</kbd>）が必要になります．
+     </p>
+     <p>
+      XZ Utils では，<code>__attribute__((warn_unused_result))</code> という属性により，返り値の未使用に対する警告が有効になっています．エラー処理の徹底には有用な手段ですが，少し試してみたいという状況では，<kbd>-Dlzma_attr_warn_unused_result=</kbd> というオプションで無効化しておいた方が良いかもしれません．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="code">圧縮・伸長</a></h2>
+    <div class="subsection">
+     <h3>圧縮・伸長の概要</h3>
+     <div class="float">
+      <pre class="code">// 外部から利用する機会のあるメンバを抜粋
+typedef struct {
+  const uint8_t *next_in;  // 入力位置
+  size_t avail_in;         // 入力データの残りバイト数
+  uint64_t total_in;       // 入力データの合計バイト数
+
+  uint8_t *next_out;       // 出力位置
+  size_t avail_out;        // 出力バッファの残りバイト数
+  uint64_t total_out;      // 出力データの合計バイト数
+
+  lzma_allocator *allocator;  // メモリを確保・解放する方法
+} lzma_stream;
+</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">lzma_stream strm = LZMA_STREAM_INIT;</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">void InitStream(lzma_stream *strm) {
+  *strm = (lzma_stream)LZMA_STREAM_INIT;
+}</pre>
+     </div><!-- float -->
+     <p>
+      XZ Utils の基本的な使い方では，<kbd>&lt;lzma/base.h&gt;</kbd> で定義されている <code>lzma_stream</code> という構造体を利用することになります．<code>lzma_stream</code> の役割は zlib における <code>z_stream</code> に相当しますが，初期化には <var>LZMA_STREAM_INIT</var> というマクロを使います．変数の定義と同時に初期化をする場合は単純な代入文のように記述できますが，ポインタを受け取って初期化する場合などは，<var>LZMA_STREAM_INIT</var> により初期化したオブジェクトを作成して代入するという手順が必要になります．
+     </p>
+     <div class="float">
+      <pre class="code">typedef struct {
+  void *(*alloc)(void *opaque, size_t nmemb, size_t size);
+  void (*free)(void *opaque, void *ptr);
+  void *opaque;
+} lzma_allocator;</pre>
+     </div><!-- float -->
+     <p>
+      メモリを確保・解放する方法については，<code>lzma_allocator</code> という構造体により指定できます．<code>malloc()</code>, <code>free()</code> を用いるデフォルトの動作では困るという場合にのみ変更してください．<code>lzma_allocator</code> については，<kbd>&lt;lzma/base.h&gt;</kbd> に詳細な説明があります．
+     </p>
+     <p>
+      <code>lzma_stream</code> のメンバを初期化した後は，圧縮・伸長の初期設定をおこないます．圧縮するときに呼び出す関数は <code>lzma_easy_encoder()</code>，伸長するときに呼び出す関数は <code>lzma_stream_decoder()</code> です．これらの関数については，<kbd>&lt;lzma/container.h&gt;</kbd> に詳細な説明があります．圧縮については <code>lzma_stream_encoder()</code> という関数もありますが，設定は難しそうです．気になる方は <kbd>&lt;lzma/filter.h&gt;</kbd> を参照してください．
+     </p>
+     <p>
+      初期設定の後に呼び出す関数は共通であり，繰り返し <code>lzma_code()</code> を呼び出して圧縮・伸長をおこない，<code>lzma_end()</code> によって終了処理をおこなうようになっています．これらの関数については，<kbd>&lt;lzma/base.h&gt;</kbd> に詳細な説明があります．
+     </p>
+     <p>
+      xz 形式の圧縮・伸長には <code>lzma_easy_encoder()</code>, <code>lzma_stream_decoder()</code> を使いますが，lzma 形式の圧縮・伸長には <code>lzma_alone_encoder()</code>, <code>lzma_alone_decoder()</code> を使います．圧縮形式が分かっていないデータを伸長するときは，<code>lzma_auto_decoder()</code> により自動判別することも可能です．
+     </p>
+     <p>
+      圧縮前後のデータをすべてメモリ上に展開できるときや，メモリマップト I/O によりファイル全体をメモリ上にマップできるときなど，データをひとまとめにして圧縮できる状況では，<code>lzma_easy_buffer_encode()</code> を使って一息に圧縮することが可能です．同様に，<code>lzma_stream_buffer_decode()</code> を使って一息に伸長することも可能です．これらの関数を用いる場合，<code>lzma_stream</code> は不要になります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>圧縮</h3>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_easy_encoder(lzma_stream *strm,
+                           uint32_t preset,
+                           lzma_check check);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">lzma_ret ret = lzma_easy_encoder(&amp;strm, 6, LZMA_CHECK_CRC64);
+assert(ret == LZMA_OK);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮の初期設定には <code>lzma_easy_encoder()</code> を使います．第 1 引数には <code>lzma_stream</code> のオブジェクト，第 2 引数である <var>preset</var> には圧縮レベルとフラグ，第 3 引数である <var>check</var> には整合性の確認に使用する誤り検出符号を指定するようになってします．指定できる圧縮レベルは <var>0</var> 以上 <var>9</var> 以下の整数です．数値を大きくすると，圧縮率は向上するものの，圧縮にかかる時間が長くなり，メモリ消費が大きくなります．コマンドラインツールである <kbd>xz</kbd> が用いるデフォルトの圧縮レベルは <var>6</var> です．また，<var>LZMA_PRESET_EXTREME</var> というフラグを与えることにより，圧縮にかかる時間は長くなるものの，圧縮率を少しだけ向上させることができます．誤り検出符号については，<var>LZMA_CHECK_NONE</var>, <var>LZMA_CHECK_CRC32</var>, <var>LZMA_CHECK_CRC64</var>, <var>LZMA_CHECK_SHA256</var> の中から選ぶようになっています．<kbd>xz</kbd> が用いるデフォルトの確認方法は <var>LZMA_CHECK_CRC64</var> です．<kbd>&lt;lzma/check.h&gt;</kbd> に少しだけ説明があります．<code>lzma_easy_encoder()</code> は失敗すると <var>LZMA_OK</var> 以外の値を返します．
+     </p>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_code(lzma_stream *strm,
+                   lzma_action action);</pre>
+     </div><!-- float -->
+
+     <div class="float">
+      <pre class="code">lzma_action action = LZMA_RUN;
+lzma_ret ret = LZMA_OK;
+do {
+  strm.next_in = (const uint8_t *)...;
+  strm.avail_in = ...;
+  if (/* 入力が尽きていれば */) {
+    action = LZMA_FINISH;
+  }
+  do {
+    strm.next_out = (uint8_t *)...;
+    strm.avail_out = ...;
+    ret = lzma_code(&amp;strm, action);
+    assert((ret == LZMA_OK) ||
+           (ret == LZMA_STREAM_END));
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+  assert(strm.avail_in == 0);
+} while (action != LZMA_FINISH);
+assert(ret == LZMA_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮には <code>lzma_code()</code> を使います．第 1 引数には入力データと出力バッファを設定した <code>lzma_stream</code> のオブジェクト，第 2 引数には <var>LZMA_RUN</var> を指定します．ただし，すべての入力データを指定した後は，圧縮を完了させるために <var>LZMA_FINISH</var> を指定します．なお，<var>LZMA_SYNC_FLUSH</var> や <var>LZMA_FULL_FLUSH</var> を指定することにより，内部状態として保持されているデータの出力を強制したり，内部状態を初期化したりすることも可能ですが，これらの機能を使う機会は少ないと思います．それぞれの動作については，<kbd>&lt;lzma/base.h&gt;</kbd> に詳細な説明があります．
+     </p>
+     <p>
+      入力データの設定については，<code>lzma_stream</code> のメンバである <var>next_in</var>, <var>avail_in</var> に対しておこないます．出力バッファの設定については，<code>lzma_stream</code> のメンバである <var>next_out</var>, <var>avail_out</var> に対しておこないます．<var>next_in</var>, <var>next_out</var> は <code>uint8_t</code> のポインタになっているので，明示的に型変換しないとコンパイラに警告されるかもしれません．また，<var>next_in</var> には <code>const</code> 修飾子が付与されているので，zlib や libbzip2 と同じように扱えないことがあります．
+     </p>
+     <p>
+      <code>lzma_code()</code> の返り値は，おそらく <var>LZMA_OK</var>, <var>LZMA_STREAM_END</var>, <var>LZMA_MEM_ERROR</var>, <var>LZMA_OPTIONS_ERROR</var>, <var>LZMA_DATA_ERROR</var>, <var>LZMA_BUF_ERROR</var>, <var>LZMA_PROG_ERROR</var> の 7 種類です．圧縮が問題なく継続していれば <var>LZMA_OK</var> になります．第 2 引数に <var>LZMA_RUN</var> 以外の動作を指定するときは，内部状態の変化に際して <var>LZMA_STREAM_END</var> が返り値になるまで，同じ動作を継続する必要があります．動作が <var>LZMA_FINISH</var> であれば，<var>LZMA_STREAM_END</var> は圧縮の完了を意味するので，<code>lzma_end()</code> の呼び出しを待つ状態になります．
+     </p>
+     <p>
+      <var>LZMA_MEM_ERROR</var> はメモリの確保に失敗したことを示します．<var>LZMA_OPTIONS_ERROR</var> は圧縮の設定と <code>lzma_code()</code> の引数が矛盾していることを示します．<var>LZMA_DATA_ERROR</var> はサイズが上限に達したことを示す返り値ですが，上限は<var>約 8EiB（2<sup>63</sup> bytes）</var>であることから，バグなどによるものと考える方が自然です．<var>LZMA_BUF_ERROR</var> は，入出力の進捗をともなわない <code>lzma_code()</code> の呼び出しが連続したことを示します．入出力を設定しなおせば復帰できるという点は zlib, libbzip2 と同じですが，連続でなければ <var>LZMA_OK</var> になるという点が異なります．最後に，<var>LZMA_PROG_ERROR</var> は，引数が間違っているときや，入出力位置が <var>NULL</var> になっているとき，あるいは <code>lzma_end()</code> の後で <code>lzma_code()</code> を呼び出したときなどに返り値となります．エラー番号については，<kbd>&lt;lzma/base.h&gt;</kbd> に詳細な説明があります．
+     </p>
+     <div class="float">
+      <pre class="code">void lzma_end(lzma_stream *strm);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮が完了したとき，あるいは圧縮を中断するときは，<code>lzma_end()</code> を呼び出して，<code>lzma_stream</code> の内部状態に割り当てられているメモリを解放する必要があります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>伸長</h3>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_stream_decoder(lzma_stream *strm,
+                             uint64_t memlimit,
+                             uint32_t flags);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">uint64_t lzma_easy_decoder_memusage(uint32_t preset);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">uint64_t memlimit = 128 &lt;&lt; 20;
+lzma_ret ret = lzma_stream_decoder(&amp;strm, memlimit, 0);
+assert(ret == LZMA_OK);</pre>
+     </div><!-- float -->
+     <p>
+      伸長の初期設定には <code>lzma_stream_decoder()</code> を使います．第 1 引数には <code>lzma_stream</code> のオブジェクト，第 2 引数である <var>memlimit</var> には割り当てるメモリの上限，第 3 引数である <var>flags</var> には動作を切り替えるフラグを指定するようになっています．<var>memlimit</var> が足りないときはエラーになるので，メモリの容量に余裕があるのであれば，大きめの値にしておく方が無難です．実際に割り当てられるメモリの大きさは，<code>lzma_easy_decoder_memusage()</code> により確認できるようになっていて，圧縮レベルにが最大の <var>9</var> であれば，<var>64MiB</var> より少し大きくなります．<var>128MiB</var> を上限にしておけば，不足することはないと思います．
+     </p>
+     <p>
+      <var>flags</var> については，<var>LZMA_TELL_NO_CHECK</var>, <var>LZMA_TELL_UNSUPPORTED_CHECK</var>, <var>LZMA_TELL_ANY_CHECK</var>, <var>LZMA_CONCATENATED</var> を組み合わせて指定できるようになっています．<var>LZMA_TELL_NO_CHECK</var> を指定すると，<code>lzma_code()</code> は誤り検出符号が使われていないデータに対して <var>LZMA_NO_CHECK</var> を返すようになります．<var>LZMA_TELL_UNSUPPORTED_CHECK</var> を指定したときは，対応していない誤り検出符号を見つけたときに <var>LZMA_UNSUPPORTED_CHECK</var> を返すようになります．<var>LZMA_TELL_ANY_CHECK</var> を指定した場合，誤り検出符号の種類を <code>lzma_get_check()</code> により取得できるようになったタイミングで <var>LZMA_GET_CHECK</var> を返します．最後に，<var>LZMA_CONCATENATED</var> を指定したときは，複数のデータが連結されている場合においても，単一のデータであるかのように伸長をおこないます．この状態では，<var>LZMA_FINISH</var> を指定しない限り，<code>lzma_code()</code> は <var>LZMA_STREAM_END</var> を返しません．
+     </p>
+     <div class="float">
+      <pre class="code">// 圧縮と同じ
+lzma_action action = LZMA_RUN;
+lzma_ret ret = LZMA_OK;
+do {
+  strm.next_in = (const uint8_t *)...;
+  strm.avail_in = ...;
+  if (/* 入力が尽きていれば */) {
+    action = LZMA_FINISH;
+  }
+  do {
+    strm.next_out = (uint8_t *)...;
+    strm.avail_out = ...;
+    ret = lzma_code(&amp;strm, action);
+    assert((ret == LZMA_OK) ||
+           (ret == LZMA_STREAM_END));
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+  assert(strm.avail_in == 0);
+} while (action != LZMA_FINISH);
+assert(ret == LZMA_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      初期設定の後は，入力データと出力バッファを設定した <code>lzma_stream</code> のオブジェクトを第 1 引数として <code>lzma_code()</code> を呼び出し，圧縮されたデータを伸長します．第 2 引数には <var>LZMA_RUN</var> を指定します．初期設定において <var>LZMA_CONCATENATED</var> を指定していない限り，<var>LZMA_FINISH</var> は必要ありません．入出力の設定方法は，圧縮されたデータが入力となり，伸長されたデータが出力となることを除けば，圧縮の場合と同じです．<var>next_in</var>, <var>avail_in</var> に入力データ，<var>next_out</var>, <var>avail_out</var> に出力バッファを設定します．
+     </p>
+     <p>
+      <code>lzma_code()</code> の返り値は，圧縮するときの返り値に，誤り検出符号に関する 3 種類の返り値と，<var>LZMA_MEMLIMIT_ERROR</var>, <var>LZMA_FORMAT_ERROR</var> を加えた 12 種類になります．<var>LZMA_MEMLIMIT_ERROR</var> はメモリの上限が不足した場合の返り値であり，<var>LZMA_FORMAT_ERROR</var> は入力データが xz 形式になっていない場合の返り値です．また，入力データが破損している場合，返り値は <var>LZMA_DATA_ERROR</var> になります．
+     </p>
+     <p>
+      伸長が完了したとき，あるいは伸長を中断するときは，<code>lzma_end()</code> を呼び出して，<code>lzma_stream</code> の内部状態に割り当てられているメモリを解放する必要があります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>lzma 形式の圧縮・伸長</h3>
+     <p>
+      XZ Utils では xz 形式の前身にあたる lzma 形式の圧縮・伸長にも対応しています．ただし，lzma 形式から xz 形式への移行が強く推奨されているので，特別な事情がない限り，lzma 形式への圧縮は控えておくべきです．
+     </p>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_alone_encoder(lzma_stream *strm,
+                            const lzma_options_lzma *options);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">lzma_bool lzma_lzma_preset(lzma_options_lzma *options,
+                           uint32_t preset);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">lzma_options_lzma options;
+lzma_bool is_failed = lzma_lzma_preset(&amp;options, 6);
+assert(is_failed == false);
+lzma_ret ret = lzma_alone_encoder(&amp;strm, &amp;options);
+assert(ret == LZMA_OK);</pre>
+     </div><!-- float -->
+     <p>
+      lzma 形式への圧縮には <code>lzma_alone_encoder()</code> という関数を使います．第 1 引数には <code>lzma_stream</code> のオブジェクト，第 2 引数である <var>options</var> には lzma 形式のオプションを指定するようになっています．そして，圧縮レベルとフラグからオプションを作成する関数が <code>lzma_lzma_preset()</code> です．第 2 引数である <var>preset</var> に圧縮レベルとフラグを渡すことにより，第 1 引数である <var>options</var> にオプションの内容が設定されます．<code>lzma_lzma_preset()</code> は成功すると <var>true</var> を返し，失敗すると <var>false</var> を返すことに注意してください．初期化後の手順は xz 形式への圧縮と同じです．ただし，lzma 形式の機能には制限があり，<var>LZMA_SYNC_FLUSH</var> に対応していません．
+     </p>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_alone_decoder(lzma_stream *strm,
+                            uint64_t memlimit);</pre>
+     </div><!-- float -->
+     <p>
+      lzma 形式のデータを伸長するには <code>lzma_alone_decoder()</code> という関数を使います．第 1 引数には <code>lzma_stream</code> のオブジェクト，第 2 引数である <var>memlimit</var> には割り当てるメモリの上限を指定するようになっています．lzma 形式には誤り検出機能がないので，<code>lzma_easy_decoder()</code> とは異なり，第 3 引数である <var>flags</var> がなくなっています．初期化後の手順は xz からの伸長と同じです．
+     </p>
+     <p>
+     </p>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_auto_decoder(lzma_stream *strm,
+                           uint64_t memlimit,
+                           uint32_t flags);</pre>
+     </div><!-- float -->
+     <p>
+      <code>lzma_auto_decoder()</code> を用いることにより，圧縮形式を自動的に判別して伸長の初期設定をすることも可能です．引数は <code>lzma_easy_decoder()</code> と同じであり，基本的には，第 2 引数である <var>memlimit</var> に <var>128MiB</var>，第 3 引数である <var>flags</var> に <var>0</var> を渡しておけば問題ありません．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>一括圧縮・一括伸長</h3>
+     <div class="float">
+      <pre class="code">lzma_ret lzma_easy_buffer_encode(uint32_t preset,
+                                 lzma_check check,
+                                 lzma_allocator *allocator,
+                                 const uint8_t *in,
+                                 size_t in_size,
+                                 uint8_t *out,
+                                 size_t *out_pos,
+                                 size_t out_size);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">size_t lzma_stream_buffer_bound(size_t uncompressed_size);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">lzma_ret lzma_stream_buffer_decode(uint64_t *memlimit,
+                                   uint32_t flags,
+                                   lzma_allocator *allocator,
+                                   const uint8_t *in,
+                                   size_t *in_pos,
+                                   size_t in_size,
+                                   uint8_t *out,
+                                   size_t *out_pos,
+                                   size_t out_size);</pre>
+     </div><!-- float -->
+     <p>
+      入力データや出力バッファを分割する必要がない状況では，<code>lzma_easy_buffer_encode()</code> を用いることにより，<code>lzma_stream</code> を介することなく圧縮が可能です．<code>lzma_stream_buffer_bound()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>lzma_easy_buffer_encode()</code> を呼び出すことになります．第 1 引数である <var>preset</var> と第 2 引数である <var>check</var> は，内部で <code>lzma_easy_encoder()</code> に渡す引数です．第 3 引数である <var>allocator</var> には，メモリの確保・解放に用いる方法を指定します．残っているのは入力データと出力バッファの指定に用いる引数です．出力の開始位置が <var>out + *out_pos</var> になり，出力の後で <var>out_pos</var> の参照先が更新されることに注意してください．
+     </p>
+     <p>
+      伸長には <code>lzma_stream_buffer_decode()</code> を利用します．出力バッファのサイズを求める手段は用意されていないので，圧縮の段階で元のサイズを保存しておく必要があります．第 1 引数である <var>memlimit</var> の参照先は，内部で <var>LZMA_MEMLIMIT_ERROR</var> が発生した場合に更新されることがあります．入力データと出力バッファの指定については，<var>in_pos</var> が追加されていることに注意してください．<code>lzma_easy_buffer_encode()</code> における <var>out_pos</var> と同様に，入力位置の受け渡しに利用されます．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="sample">サンプルコード</a></h2>
+    <div class="float">
+     <pre class="console">$ gcc -Wall -O2 -std=c99 xz-utils-test.c -llzma -o xz-utils-test</pre>
+    </div><!-- float -->
+    <p>
+     xz 形式の圧縮・伸長をおこなうプログラムのサンプルコードとして <a href="xz-utils-test.c">xz-utils-test.c</a> を用意しました．C99 の機能を使っているので，<kbd>gcc</kbd> には <kbd>-std=c99</kbd> を渡すようにしてください．
+    </p>
+    <div class="float">
+     <pre class="console">$ ./xz-utils-test --help
+Usage: ./xz-utils-test [OPTION]... [FILE]...
+Version: xz-utils-5.0.3
+Options:
+  -e, --encoder  圧縮します (default)
+  -d, --decoder  伸長します
+  -p, --preset=[0-9][e]  圧縮レベルとフラグを指定します (default: 6)
+  -c, --check=[NONE, CRC32, CRC64, SHA256]
+                         誤り検出符号を指定します (default: CRC64)
+  -o, --output=[FILE]    出力ファイルを指定します (default: stdout)
+  -h, --help     このヘルプを表示します</pre>
+    </div><!-- float -->
+    <p>
+     コマンドライン引数による圧縮形式や圧縮レベルの切り替えが可能になっています．<kbd>-h</kbd> もしくは <kbd>--help</kbd> をオプションとして渡すことにより，XZ Utils のバージョンとコマンドライン引数の一覧を確認することができます．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="conclusion">おわりに</a></h2>
+    <p>
+     本記事では XZ Utils の基本的な使い方を説明しました．大抵のアプリケーションについては対処できるようになっています．より高度な使い方については，<a href="http://tukaani.org/xz/">公式サイト</a>で配布されているアーカイブに同梱のドキュメントおよびヘッダファイルを参照してください．
+    </p>
+   </div><!-- section -->
+  </div><!-- body -->
+  <div id="footer">
+   <div class="left">How to use XZ Utils</div>
+   <div class="right">
+  ‮moc.liamg@atay.umusus‭
+   </div>
+   <div class="end"></div>
+  </div><!-- footer -->
+ </body>
+</html>

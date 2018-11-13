@@ -1,0 +1,561 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>zlib の使い方</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+ </head>
+ <body>
+  <div id="header">
+   <div class="left">How to use zlib</div>
+   <div class="right">Last modified: 8 March 2012</div>
+   <div class="end"></div>
+  </div><!-- header -->
+  <div id="body">
+   <h1>zlib の使い方</h1>
+   <p id="authors">
+    <span class="author">矢田 晋</span>
+   </p><!-- authors -->
+   <p id="abstract">
+    <span id="heading">Abstract: </span>
+     zlib は圧縮アルゴリズムの一種である Deflate のライブラリであり，C#, Haskell, Java, Perl, Python, Ruby など，主要なプログラミング言語では，軒並み使えるように整備されています．圧縮・伸長が高速なこともあり，ディスク領域の有効利用や通信量の削減を目的として，zlib は気軽に利用できます．本記事は，C 言語から zlib を利用する方法の解説になっています．
+   </p><!-- abstract -->
+   <div class="section">
+    <h2><a name="introduction">はじめに</a></h2>
+    <p>
+     <a href="http://www.zlib.net/manual.html">最新版のマニュアル</a>は<a href="http://www.zlib.net/">公式サイト</a>で提供されています．また，zlib のヘッダである <kbd>zlib.h</kbd> には，マニュアルと同様の内容がコメントとして記述されています．利用している zlib が最新版と異なる場合，<kbd>zlib.h</kbd> を確認する方が良いかもしれません．おそらく <kbd>/usr/include/zlib.h</kbd> としてインストールされています．
+    </p>
+    <ul>
+     <li>
+      <a href="http://www.zlib.net/">http://www.zlib.net/（zlib Home Site）</a>
+      <ul>
+       <li>zlib の公式サイトです．ソースコード，<a href="http://www.zlib.net/manual.html">マニュアル</a>，<a href="http://www.zlib.net/zlib_how.html">説明付きのサンプルコード</a>，<a href="http://www.zlib.net/feldspar.html">アルゴリズムの解説</a>などがあります．</li>
+      </ul>
+     </li>
+    </ul>
+    <p>
+     英語のマニュアルを読んでも細かすぎて伝わらないと思う方には，zlib の使い方を説明している日本語のウェブページが参考になると思います．最新版ではありませんが，マニュアルの和訳も存在しています．
+    </p>
+    <ul>
+     <li>
+      <a href="http://oku.edu.mie-u.ac.jp/~okumura/compression/zlib.html">http://oku.edu.mie-u.ac.jp/~okumura/compression/zlib.html（Zlib 入門）</a>
+      <ul>
+       <li>zlib による圧縮・伸長の方法が解説されています．</li>
+      </ul>
+     </li>
+     <li>
+      <a href="http://www.fireproject.jp/feature/c-language/etc/zlib.html">http://www.fireproject.jp/feature/c-language/etc/zlib.html（zlib を使ってみる）</a>
+      <ul>
+       <li>zlib を使って gzip 形式のファイルを読み書きする方法が説明されています．</li>
+      </ul>
+     </li>
+     <li>
+      <a href="http://dencha.ojaru.jp/programs/pg_filer_04.html">http://dencha.ojaru.jp/programs/pg_filer_04.html（伝説のお茶の間 No006-04 zlib圧縮）</a>
+      <ul>
+       <li>zlib による圧縮・伸長の方法が説明されています．</li>
+      </ul>
+     </li>
+     <li>
+      <a href="http://www.sra.co.jp/people/m-kasahr/zlib/index.html">http://www.sra.co.jp/people/m-kasahr/zlib/index.html（Japanese translation of zlib.h）</a>
+      <ul>
+       <li>zlib-1.1.4 に付属している zlib.h の和訳があります．</li>
+      </ul>
+     </li>
+    </ul>
+    <p>
+     以下，<a href="#install">zlib のインストール方法</a>を紹介した後，<a href="#code">メモリ上での圧縮・伸長</a>と <a href="#gzfile">gzip 形式のファイルを操作する関数群</a>について説明します．また，zlib を用いて圧縮・伸長をおこなうプログラムの<a href="#sample">サンプルコード</a>を用意しました．Deflate とは異なる圧縮アルゴリズムをライブラリ化した libbzip2 や liblzma も zlib と同様のインタフェースを持っているので，zlib の使い方が分かっていれば，簡単に使えるようになると思います．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="install">インストール</a></h2>
+    <div class="subsection">
+     <h3>Debian 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo aptitude install zlib1g-dev</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ sudo apt-get install zlib1g-dev</pre>
+     </div><!-- float -->
+     <p>
+      Debian 系の環境であれば，<kbd>aptitude</kbd> を使って簡単にインストールできます．インストールには root 権限が必要なので，必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．古い環境であれば，<kbd>apt-get</kbd> になるかもしれません．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>Red Hat 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo yum install zlib-devel</pre>
+     </div><!-- float -->
+     <p>
+      Red Hat や CentOS であれば，<kbd>yum</kbd> を使って簡単にインストールできます．こちらも必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ソースコードからのインストール</h3>
+     <div class="float">
+      <pre class="console">$ wget http://zlib.net/zlib-1.2.6.tar.gz
+$ tar zxf zlib-1.2.6.tar.gz
+$ cd zlib-1.2.6
+$ ./configure
+$ make
+$ make check
+$ sudo make install</pre>
+     </div><!-- float -->
+     <p>
+      ソースコードの tarball は<a href="http://www.zlib.net/">公式サイト</a>からダウンロードできます．ブラウザや <kbd>wget</kbd> により tarball をダウンロードした後は，<kbd>configure</kbd>, <kbd>make</kbd>, <kbd>make check</kbd>, <kbd>make install</kbd> という一般的な手順でインストールします．zlib を軽く試してみるのであれば，<kbd>make check</kbd> まで終わった時点で，<kbd>zlib.h</kbd>, <kbd>zconf.h</kbd>, <kbd>libz.a</kbd> のみをコピーして使うことも可能です．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>インストールの確認</h3>
+     <div class="float">
+      <pre class="code">// test.c
+#include &lt;zlib.h&gt;
+int main(void) {
+  z_stream strm = { .zalloc = Z_NULL, .zfree = Z_NULL, .opaque = Z_NULL };
+  deflateInit(&amp;strm, Z_DEFAULT_COMPRESSION);
+  deflateEnd(&amp;strm);
+  return 0;
+}</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ gcc -Wall -std=c99 test.c -lz</pre>
+     </div><!-- float -->
+     <p>
+      簡単なソースコードをコンパイル・リンクしてみれば，zlib が問題なくインストールされているかどうか分かります．リンクにおいては，zlib を指定するオプション（<kbd>-lz</kbd>）が必要になります．
+     </p>
+     <p>
+      サンプルは C 言語のコードになっています．<kbd>gcc</kbd> では問題なくコンパイルできますが，<kbd>g++</kbd> ではエラーになるのでご注意ください．<var>strm</var> の初期化コードが気になる方は，<a href="http://seclan.dll.jp/c99d/c99d07.htm#dt19991025">プログラミング言語 C の新機能</a>をご覧ください．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="code">圧縮・伸長</a></h2>
+    <div class="subsection">
+     <h3>圧縮・伸長の概要</h3>
+     <div class="float">
+      <pre class="code">// 外部から利用する機会のあるメンバを抜粋
+typedef struct z_stream_s {
+  Bytef    *next_in;  // 入力位置
+  uInt     avail_in;  // 入力データの残りバイト数
+  uLong    total_in;  // 入力データの合計バイト数
+
+  Bytef    *next_out; // 出力位置
+  uInt     avail_out; // 出力バッファの残りバイト数
+  uLong    total_out; // 出力データの合計バイト数
+
+  char     *msg;      // エラーメッセージ
+
+  alloc_func zalloc;  // メモリの確保に用いる関数
+  free_func  zfree;   // メモリの解放に用いる関数
+  voidpf     opaque;  // zalloc と zfree に渡すポインタ
+} z_stream;</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">z_stream strm;
+strm.zalloc = Z_NULL;
+strm.zfree = Z_NULL;
+strm.opaque = Z_NULL;</pre>
+     </div><!-- float -->
+     <p>
+      zlib の基本的な使い方では，<code>z_stream</code> という構造体を利用することになります．<code>z_stream</code> のオブジェクトを作成して，<var>zalloc</var>, <var>zfree</var>, <var>opaque</var> を設定しましょう．これらのメンバにより，zlib の内部状態を保持するためのメモリを確保・解放する方法が決まります．特段の理由がない限り，デフォルトの設定となる <var>Z_NULL</var> を代入しておけば問題ありません．これらのメンバを設定しておかないと，以下で説明する関数の動作は未定義になります．
+     </p>
+     <p>
+      <code>z_stream</code> のオブジェクトを初期化した後は，圧縮する場合と伸長する場合とで呼び出すべき関数が異なります．圧縮する場合は，<code>deflateInit()</code> で初期設定，<code>deflate()</code> で圧縮，<code>deflateEnd()</code> で終了処理となります．伸長する場合は，<code>inflateInit()</code> で初期設定，<code>inflate()</code> で伸長，<code>inflateEnd()</code> で終了処理となります．<a href="http://www.zlib.net/">zlib の公式サイト</a>にある，<a href="http://www.zlib.net/zlib_how.html">サンプルコードを使って圧縮・伸長の流れを説明したドキュメント</a>がとても参考になります．
+     </p>
+     <p>
+      初期設定に <code>delateInit()</code>, <code>inflateInit()</code> を用いると，zlib 形式の圧縮・伸長になります．gzip 形式の圧縮・伸長については，<code>delateInit2()</code>, <code>inflateInit2()</code> による初期化が必要です．伸長においては，圧縮形式を自動判別することもできます．
+     </p>
+     <p>
+      圧縮前後のデータをすべてメモリ上に展開できるときや，メモリマップト I/O によりファイル全体をメモリ上にマップできるときなど，データをひとまとめにして圧縮できる状況では，<code>compress()</code>, <code>compress2()</code> を使って一息に圧縮することが可能です．同様に，<code>uncompress()</code> を使って一息に伸長することも可能です．これらの関数を用いる場合，<code>z_stream</code> は不要になります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>圧縮</h3>
+     <div class="float">
+      <pre class="code">int deflateInit(z_stream *strm, int level);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = deflateInit(&amp;strm, Z_DEFAULT_COMPRESSION);
+assert(ret == Z_OK);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮の初期設定には <code>deflateInit()</code> を使います．第 1 引数には <var>zalloc</var>, <var>zfree</var>, <var>opaque</var> を設定した <code>z_stream</code> のオブジェクト，第 2 引数である <var>level</var> には圧縮レベルを指定するようになっています．デフォルトの圧縮レベルは <var>Z_DEFAULT_COMPRESSION（=6）</var>であり，他に，圧縮速度を最高にする <var>Z_BEST_SPEED（=1）</var>，圧縮率を最高にする <var>Z_BEST_COMPRESSION（=9）</var>，圧縮を無効にする <var>Z_NO_COMPRESSION（=0）</var> という定数が用意されています．基本的に，数値を小さくすると圧縮時間が短くなり，大きくすると圧縮後のサイズが小さくなります．<code>deflateInit()</code> は失敗すると <var>Z_OK</var> 以外の値を返します．
+     </p>
+     <div class="float">
+      <pre class="code">int deflate(z_stream *strm, int flush);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int flush = Z_NO_FLUSH;
+int ret = Z_OK;
+do {
+  strm.next_in = (Bytef *)...;
+  strm.avail_in = ...;
+  if (/* 入力が尽きていれば */) {
+    flush = Z_FINISH;
+  }
+  do {
+    strm.next_out = (Bytef *)...;
+    strm.avail_out = ...;
+    ret = deflate(&amp;strm, flush);
+    assert(ret != Z_STREAM_ERROR);
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+  assert(strm.avail_in == 0);
+} while (flush != Z_FINISH);
+assert(ret == Z_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮には <code>deflate()</code> を使います．第 1 引数には入力データと出力バッファを設定した <code>z_stream</code> のオブジェクト，第 2 引数である <var>flush</var> には <var>Z_NO_FLUSH</var> を指定します．ただし，すべての入力データを指定した後は，圧縮を完了させるために <var>Z_FINISH</var> を指定します．また，<var>Z_SYNC_FLUSH</var> や <var>Z_FULL_FLUSH</var> を指定することにより，内部状態として保持されているデータの出力を強制したり，内部状態を初期化したりすることも可能ですが，これらの機能を使う機会は少ないと思います．
+     </p>
+     <p>
+      入力データの設定については，<code>z_stream</code> のメンバである <var>next_in</var>, <var>avail_in</var> に対しておこないます．出力バッファの設定については，<code>z_stream</code> のメンバである <var>next_out</var>, <var>avail_out</var> に対しておこないます．<var>next_in</var>, <var>next_out</var> は <code>Bytef</code> のポインタになっているので，<code>unsigned char</code> のポインタを設定する場合であっても，明示的に型変換しておく方が無難です．
+     </p>
+     <p>
+      <code>deflate()</code> の返り値は <var>Z_OK</var>, <var>Z_STREAM_END</var>, <var>Z_STREAM_ERROR</var>, <var>Z_BUF_ERROR</var> の 4 種類です．圧縮が問題なく継続していれば <var>Z_OK</var> になります．第 2 引数が <var>Z_FINISH</var> のとき，圧縮が無事に完了すれば <var>Z_STREAM_END</var> が返り値になります．残りの 2 つはエラーを意味しますが，<var>Z_BUF_ERROR</var> は入力データ・出力バッファの一時的な不足を示しているだけなので，入力データ・出力バッファを設定しなおしてから，改めて <code>deflate()</code> を呼び出すことにより，圧縮を継続することができます．問題になるのは <var>Z_STREAM_ERROR</var> であり，<var>next_in</var>, <var>next_out</var> が <var>NULL</var> のときや，内部状態が破壊されたときなどに返り値となります．
+     </p>
+     <div class="float">
+      <pre class="code">int deflateEnd(z_stream *strm);</pre>
+     </div><!-- float -->
+     <p>
+      <code>deflate()</code> が <var>Z_STREAM_END</var> が返した後は，<code>deflateEnd()</code> により，内部状態に割り当てたメモリを解放します．圧縮が完了していない状態で <code>deflateEnd()</code> を呼び出すと，返り値は <var>Z_DATA_ERROR</var> になります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>伸長</h3>
+     <div class="float">
+      <pre class="code">int inflateInit(z_stream *strm);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">strm.next_in = Z_NULL;
+strm.avail_in = 0;
+int ret = inflateInit(&amp;strm);
+assert(ret == Z_OK);</pre>
+     </div><!-- float -->
+     <p>
+      伸長は圧縮と同様の手順でおこないますが，一部のオプションがなくなるので，圧縮と比べて少し簡単になります．まず，<var>next_in</var>, <var>avail_in</var>, <var>zalloc</var>, <var>zfree</var>, <var>opaque</var> を設定した <code>z_stream</code> のオブジェクトを引数として <code>inflateInit()</code> を呼び出し，伸長の初期設定をおこないます．
+     </p>
+     <div class="float">
+      <pre class="code">int inflate(z_stream *strm, int flush);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = Z_OK;
+do {
+  strm.next_in = (Bytef *)...;
+  strm.avail_in = ...;
+  assert(strm.avail_in != 0);
+  do {
+    strm.next_out = (Bytef *)...;
+    strm.avail_out = ...;
+    ret = inflate(&amp;strm, Z_NO_FLUSH);
+    assert((ret != Z_NEED_DICT) &&
+           (ret != Z_STREAM_ERROR) &&
+           (ret != Z_DATA_ERROR) &&
+           (ret != Z_MEM_ERROR));
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+} while (ret != Z_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      初期設定の後は，入力データと出力バッファを設定した <code>z_stream</code> のオブジェクトを第 1 引数として <code>inflate()</code> を呼び出し，データの伸長をおこないます．第 2 引数である <var>flush</var> には <var>Z_NO_FLUSH</var> を指定します．<var>Z_NO_FLUSH</var> 以外にも <var>Z_SYNC_FLUSH</var>, <var>Z_FINISH</var>, <var>Z_BLOCK</var>, <var>Z_TREES</var> を指定できますが，これらの機能を使う機会は少ないと思います．入出力の設定方法は，圧縮されたデータが入力となり，伸長されたデータが出力となることを除けば，圧縮の場合と同じです．<var>next_in</var>, <var>avail_in</var> に入力データ，<var>next_out</var>, <var>avail_out</var> に出力バッファを設定します．
+     </p>
+     <p>
+      <code>inflate()</code> の返り値は，<code>deflate()</code> の返り値 4 種類（<var>Z_OK</var>, <var>Z_STREAM_END</var>, <var>Z_STREAM_ERROR</var>, <var>Z_BUF_ERROR</var>）に <var>Z_NEED_DICT</var>, <var>Z_DATA_ERROR</var>, <var>Z_MEM_ERROR</var> の 3 種類を加えた 7 種類になります．伸長が問題なく継続していれば <var>Z_OK</var>，無事に完了すれば <var>Z_STREAM_END</var> になります．<var>Z_NEED_DICT</var> は圧縮に際して <code>deflateSetDictionary()</code> で指定した辞書が必要なことを意味します．伸長を継続するには，<code>inflateSetDictionary()</code> により辞書を設定する必要があります．辞書の内容が分からないときは，復帰できないので，エラーとして扱うことになります．
+     </p>
+     <p>
+      残りの 4 種類はエラーを意味しますが，圧縮の場合と同様に，<var>Z_BUF_ERROR</var> は入力データ・出力バッファの一時的な不足を示しているだけなので，入力データ・出力バッファを設定しなおしてから，改めて <code>inflate()</code> を呼び出すことにより，伸長を継続することができます．後は復帰の難しいエラーです．<var>Z_STREAM_ERROR</var> は <var>next_in</var>, <var>next_out</var> が <var>NULL</var> のときや，内部状態が破壊されたときなどの返り値です．zlib によって伸長できないデータが入力されたときは <var>Z_DATA_ERROR</var> になり，メモリの確保に失敗したときは <var>Z_MEM_ERROR</var> になります．
+     </p>
+     <div class="float">
+      <pre class="code">int inflateEnd(z_stream *strm);</pre>
+     </div><!-- float -->
+     <p>
+      伸長の成否によらず，内部状態に割り当てたメモリを解放するため，<code>inflateEnd()</code> を呼び出す必要があります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>gzip 形式の圧縮・伸長</h3>
+     <p>
+      圧縮したデータをファイルに出力する場合，標準的なコマンド（<kbd>gzip</kbd>）で簡単に操作できる gzip 形式にしておいた方が便利なことがあります．gzip 形式の圧縮・伸長については，<code>delateInit2()</code>, <code>inflateInit2()</code> を利用することになります．
+     </p>
+     <div class="float">
+      <pre class="code">int deflateInit2(z_stream *strm,
+                 int level,
+                 int method,
+                 int windowBits,
+                 int memLevel,
+                 int strategy);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = deflateInit2(&amp;strm, Z_DEFAULT_COMPRESSION,
+    Z_DEFLATED, 31, 8, Z_DEFAULT_STRATEGY);
+assert(ret == Z_OK);</pre>
+     </div><!-- float -->
+     <p>
+      <code>delateInit2()</code> は <code>deflateInit()</code> より多くの引数を持っています．第 3 引数である <var>method</var> には圧縮方法を指定するようになっていますが，zlib-1.2.6 で指定できるのは <var>Z_DEFLATED</var> のみであり，選択肢はありません．第 4 引数である <var>windowBits</var> にはウィンドウ・サイズを指定するようになっています．<code>deflateInit()</code> と同様の動作になるのは <var>15</var> を指定した場合ですが，この設定では zlib 形式になります．gzip 形式に切り替えるには，<var>16</var> を加えた <var>31</var> を指定する必要があります．第 5 引数である <var>memLevel</var> にはメモリの消費量を指定するようになっています．<var>1</var> 以上 <var>9</var> 以下の値を指定することが可能であり，デフォルトの設定は <var>8</var> です．大きくしても特に嬉しいことはありません．第 6 引数である <var>strategy</var> には圧縮の戦略を指定するようになっており，<var>Z_DEFAULT_STRATEGY</var> によりデフォルトの戦略を指定できます．
+     </p>
+     <div class="float">
+      <pre class="code">int inflateInit2(z_stream *strm, int windowBits);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = inflateInit2(&amp;strm, 47);
+assert(ret == Z_OK);</pre>
+     </div><!-- float -->
+     <p>
+      <code>inflateInit2()</code> は，第 2 引数としてウィンドウ・サイズを受け取るようになっています．<code>deflateInit2()</code> に対して指定した以上の値にしなければなりません．<code>deflateInit()</code> は <var>15</var> を用いるため，<var>15</var> より小さい値にするのは危険です．また，<code>deflateInit2()</code> の場合と同様に，gzip 形式のデータを伸長するには，<var>16</var> を加えた <var>31</var> を指定する必要があります．さらに <var>16</var> を加えた <var>47</var> を指定すると，ヘッダから圧縮形式を自動判別するようになります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>一括圧縮・一括伸長</h3>
+     <div class="float">
+      <pre class="code">int compress(Bytef *dest, uLongf *destLen,
+             const Bytef *source, uLong sourceLen);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">uLong compressBound(uLong sourceLen);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">uLong destLen = compressBound(sourceLen);
+Bytef *dest = (Bytef *)malloc(destLen);
+assert(dest != NULL);
+int ret = compress(dest, &amp;destLen, source, sourceLen);
+assert(ret == Z_OK);</pre>
+     </div><!-- float -->
+     <p>
+      入力データや出力バッファを分割する必要がない状況では，<code>compress()</code> を用いることにより，<code>z_stream</code> を介することなく圧縮が可能です．<code>compressBound()</code> により得られるサイズの領域を出力バッファとして確保した後で <code>compress()</code> を呼び出すことになります．<code>compress()</code> の第 2 引数である <var>destLen</var> は，出力バッファのサイズを入力する目的だけでなく，圧縮後のサイズを出力する目的でも利用されます．
+     </p>
+     <div class="float">
+      <pre class="code">int compress2(Bytef *dest, uLongf *destLen,
+              const Bytef *source, uLong sourceLen, int level);</pre>
+     </div><!-- float -->
+     <p>
+      <code>compress2()</code> については，<var>Z_BEST_COMPRESSION</var> などの圧縮レベルを第 5 引数として指定することができます．ただし，ウィンドウ・サイズを指定することができないので，gzip 形式の圧縮には利用できません．
+     </p>
+     <div class="float">
+      <pre class="code">int uncompress(Bytef *dest, uLongf *destLen,
+               const Bytef *source, uLong sourceLen);</pre>
+     </div><!-- float -->
+     <p>
+      伸長には <code>uncompress()</code> を利用します．出力バッファのサイズを求める手段は用意されていないので，圧縮の段階で元のサイズを保存しておく必要があります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="gzfile">gzip 形式のファイル</a></h2>
+    <div class="subsection">
+     <h3>ファイル操作の概要</h3>
+     <p>
+      zlib には gzip 形式のファイルを操作するための型（<code>gzFile</code>）と関数群（<code>gz*()</code>）が用意されています．<code>gzFile</code> は <code>FILE *</code> の代替になり，<code>gz*()</code> は <code>fopen()</code> や <code>fclose()</code> などの代替になります．ただし，一部の関数については，インタフェースが異なっていたり，機能に制限があったりします．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ファイルを開く・閉じる</h3>
+     <div class="float">
+      <table>
+       <tr>
+        <th>zlib の関数</th><th>対応する関数</th><th>変更点</th>
+       </tr>
+       <tr>
+        <td><code>gzopen()</code></td><td><code>fopen()</code></td>
+        <td>モードの仕様</td>
+       </tr>
+       <tr>
+        <td><code>gzdopen()</code></td><td><code>fdopen()</code></td>
+        <td>モードの仕様</td>
+       </tr>
+       <tr>
+        <td><code>gzclose()</code></td><td><code>fclose()</code></td><td></td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">gzFile gzopen(const char *path, const char *mode);
+gzFile gzdopen(int fd, const char *mode);
+int gzclose(gzFile file);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">gzFile file = gzopen("output.gz", "wb9");
+assert(file != NULL);</pre>
+     </div><!-- float -->
+     <p>
+      <code>gzopen()</code> によりファイルを開くことができます．<code>fopen()</code> と同様に，第 1 引数にファイル名，第 2 引数にモードを指定するようになっています．ただし，読み書き両用を示す <var>+</var> を指定することはできません．また，書き込み用にファイルを開く場合，圧縮レベルを <var>0</var> 以上 <var>9</var> 以下の数字によって指定できます．返り値の型は <code>gzFile</code> であり，ファイルを開くことができれば，<var>NULL</var> 以外の値になります．このハンドルは以降の操作に必要であり，操作の後で <code>gzclose()</code> を使って閉じる必要があります．
+     </p>
+     <div class="float">
+      <pre class="code">gzFile file = gzdopen(STDIN_FILENO, "rb");
+assert(file != NULL);</pre>
+     </div><!-- float -->
+     <p>
+      既に開いているファイル記述子があれば，<code>gzdopen()</code> により <code>gzFile</code> と関連付けることができます．<code>fdopen()</code> と同様に，第 1 引数にファイル記述子，第 2 引数にモードを指定するようになっています．また，<code>gzopen()</code> と同様に，<var>+</var> の指定ができない代わりに，圧縮レベル（<var>0</var> ～ <var>9</var>）の指定ができるようになっています．<code>gzdopen()</code> により得られた <code>gzFile</code> は <code>gzclose()</code> を使って閉じる必要があります．<code>gzclose()</code> は関連付けられたファイル記述子も閉じるので，ファイル記述子を閉じずに残しておきたいときは，<code>dup()</code> などを使って複製しておくようにしてください．
+     </p>
+     <p>
+      <code>gzopen()</code> や <code>gzdopen()</code> により得られた <code>gzFile</code> は，<code>gzclose()</code> を使って閉じる必要があります．書き込み用のファイルについては，内部状態として保持されているデータをファイルに書き込んでから閉じるようになっています．<code>gzclose()</code> が失敗したときは，返り値が <var>Z_OK</var> 以外になります．<var>Z_ERRNO</var> のときは，エラーの原因を示す値が <var>errno</var> に格納されています．
+     </p>
+     <div class="float">
+      <pre class="code">int gzbuffer(gzFile file, unsigned size);</pre>
+     </div><!-- float -->
+     <p>
+      ファイルを開いた後，読み込みや書き込みをおこなう前であれば，<code>gzbuffer()</code> を使って内部バッファのサイズを設定することができます．デフォルトのサイズは <var>8,192</var> であり，<var>65,536</var> や <var>131,072</var> を指定することによって，読み込み速度が向上します．また，内部バッファのサイズは，<var>gzprintf()</var> を使って一度に書き込みできるバイト数にも影響します．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ファイルから読み込む</h3>
+     <div class="float">
+      <table>
+       <tr>
+        <th>zlib の関数</th><th>対応する関数</th><th>変更点</th>
+       </tr>
+       <tr>
+        <td><code>gzread()</code></td><td><code>fread()</code></td>
+        <td>引数の順序，整数の型，サイズの統合，エラーの判別</td>
+       </tr>
+       <tr>
+        <td><code>gzgets()</code></td><td><code>fgets()</code></td>
+        <td>引数の順序</td>
+       </tr>
+       <tr>
+        <td><code>gzgetc()</code></td><td><code>fgetc()</code></td><td></td>
+       </tr>
+       <tr>
+        <td><code>gzungetc()</code></td><td><code>ungetc()</code></td><td></td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int gzread(gzFile file, voidp buf, unsigned len);
+char *gzgets(gzFile file, char *buf, int len);
+int gzgetc(gzFile file);
+int gzungetc(int c, gzFile file);</pre>
+     </div><!-- float -->
+     <p>
+      zlib が提供する読み込み用の関数は <code>gzread()</code>, <code>gzgets()</code>, <code>gzgetc()</code>, <code>gzungetc()</code> の 4 種類であり，<code>fread()</code>, <code>fgets()</code>, <code>fgetc()</code>, <code>ungetc()</code> と対応しています．ただし，<code>gzread()</code> と <code>gzgets()</code> については，引数の順序や整数の型などが異なっています．64-bit 環境では <code>int</code>, <code>unsigned</code> と <code>size_t</code> のサイズが異なるため，特に注意が必要です．また，<code>fread()</code> はファイルの終端とエラーを区別せずに <var>0</var> を返しますが，<code>gzread()</code> はエラーを区別して <var>-1</var> を返すようになっています．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ファイルに書き込む</h3>
+     <div class="float">
+      <table>
+       <tr>
+        <th>zlib の関数</th><th>対応する関数</th><th>変更点</th>
+       </tr>
+       <tr>
+        <td><code>gzwrite()</code></td><td><code>fwrite()</code></td>
+        <td>引数の順序，整数の型，サイズの統合，エラーの判別</td>
+       </tr>
+       <tr>
+        <td><code>gzprintf()</code></td><td><code>fprintf()</code></td>
+        <td>長さの制限</td>
+       </tr>
+       <tr>
+        <td><code>gzputs()</code></td><td><code>fputs()</code></td>
+        <td>引数の順序</td>
+       </tr>
+       <tr>
+        <td><code>gzputc()</code></td><td><code>fputc()</code></td>
+        <td>引数の順序</td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int gzwrite(gzFile file, voidpc buf, unsigned len);
+int gzprintf(gzFile file, const char *format, ...);
+int gzputs(gzFile file, const char *s);
+int gzputc(gzFile file, int c);</pre>
+     </div><!-- float -->
+     <p>
+      zlib が提供する書き込み用の関数は <code>gzwrite()</code>, <code>gzprintf()</code>, <code>gzputs()</code>, <code>gzputc()</code> の 4 種類であり，<code>fwrite()</code>, <code>fprintf()</code>, <code>fputs()</code>, <code>fputc()</code> と対応しています．ただし，引数の順序や整数の型などが異なっています．64-bit 環境では <code>int</code>, <code>unsigned</code> と <code>size_t</code> のサイズが異なるため，特に注意が必要です．なお，<code>gzwrite()</code> は書き込むバイト数が <var>0</var> の場合とエラーが起きた場合を区別せずに <var>0</var> を返すようになっています．<code>gzprintf()</code> については，<code>gzbuffer()</code> により指定されたバイト数以上の長さを一度に書き込むことができません．デフォルトでは <var>8,191</var> バイト以下に制限されることになります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ファイルの状態を確認・変更する</h3>
+     <div class="float">
+      <table>
+       <tr>
+        <th>zlib の関数</th><th>対応する関数</th><th>変更点</th>
+       </tr>
+       <tr>
+        <td><code>gzflush()</code></td><td><code>fflush()</code></td>
+        <td>引数の追加</td>
+       </tr>
+       <tr>
+        <td><code>gzseek()</code></td><td><code>fseek()</code>
+        </td><td>整数の型，機能の制限</td>
+       </tr>
+       <tr>
+        <td><code>gztell()</code></td><td><code>ftell()</code></td><td></td>
+       </tr>
+       <tr>
+        <td><code>gzrewind()</code></td><td><code>rewind()</code></td><td></td>
+       </tr>
+       <tr>
+        <td><code>gzeof()</code></td><td><code>feof()</code></td><td></td>
+       </tr>
+       <tr>
+        <td><code>gzerror()</code></td><td><code>ferror()</code></td>
+        <td>引数の追加</td>
+       </tr>
+       <tr>
+        <td><code>gzclearerr()</code></td><td><code>clearerr()</code></td><td></td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int gzflush(gzFile file, int flush);
+int gzrewind(gzFile file);
+z_off_t gztell(gzFile file);
+z_off_t gzseek(gzFile file, z_off_t offset, int whence);
+int gzeof(gzFile file);
+const char *gzerror(gzFile file, int *errnum);
+void gzclearerr(gzFile file);</pre>
+     </div><!-- float -->
+     <p>
+      単純なファイルの読み書き以外にも，内部状態として保持されているデータをファイルに書き込んだり，読み書きの位置を変更したり，状態を確認・変更したりする関数が用意されています．ほとんどの関数には対応する標準関数があるものの，一部の機能に変更や制限があるので，利用に際しては注意が必要です．
+     </p>
+     <p>
+      <code>gzflush()</code> による内部状態のフラッシュについては，<code>fflush()</code> と異なり，第 2 引数として <var>Z_SYNC_FLUSH</var> や <var>Z_FINISH</var> を指定するようになっています．
+     </p>
+     <p>
+      gzip 形式はランダムアクセスを想定していないので，読み書きの位置を気軽に変更することはできません．<code>gzseek()</code> による読み込み位置の変更は擬似的に実現されているだけなので，効率が悪く，広範囲の移動は避けておく方が無難です．また，書き込み位置の変更については，前方への移動が不可能であり，後方への移動は移動範囲を <var>0</var> で埋めるという実装になっています．
+     </p>
+     <p>
+      <code>gzerror()</code> は，エラー番号を第 2 引数に代入し，エラーメッセージを返すようになっています．ただし，エラーがファイルの操作に起因する場合，エラー番号は <var>Z_ERRNO</var> になり，エラーの詳細は <var>errno</var> で確認する必要があります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="sample">サンプルコード</a></h2>
+    <div class="float">
+     <pre class="console">$ gcc -Wall -O2 -std=c99 zlib-test.c -lz -o zlib-test</pre>
+    </div><!-- float -->
+    <p>
+     zlib 形式および gzip 形式の圧縮・伸長をおこなうプログラムのサンプルコードとして <a href="zlib-test.c">zlib-test.c</a> を用意しました．C99 の機能を使っているので，<kbd>gcc</kbd> には <kbd>-std=c99</kbd> を渡すようにしてください．
+    </p>
+    <div class="float">
+     <pre class="console">$ ./zlib-test --help
+Usage: ./zlib-test [OPTION]... [FILE]...
+Version: zlib-1.2.6
+Options:
+  -d, --deflate  圧縮します (default)
+  -i, --inflate  伸長します
+  -g, --gzip     gzip 形式で圧縮します
+  -z, --zlib     zlib 形式で圧縮します (default)
+  -l, --level=[0-9]    圧縮レベルを指定します (default: 6)
+  -o, --output=[FILE]  出力ファイルを指定します (default: stdout)
+  -h, --help     このヘルプを表示します</pre>
+    </div><!-- float -->
+    <p>
+     コマンドライン引数による圧縮形式や圧縮レベルの切り替えが可能になっています．<kbd>-h</kbd> もしくは <kbd>--help</kbd> をオプションとして渡すことにより，zlib のバージョンとコマンドライン引数の一覧を確認することができます．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="conclusion">おわりに</a></h2>
+    <p>
+     本記事では zlib の基本的な使い方を説明しました．大抵のアプリケーションについては対処できるようになっています．より高度な使い方については，<a href="http://www.zlib.net/">公式サイト</a>のドキュメントを参照してください．
+    </p>
+   </div><!-- section -->
+  </div><!-- body -->
+  <div id="footer">
+   <div class="left">How to use zlib</div>
+   <div class="right">
+  ‮moc.liamg@atay.umusus‭
+   </div>
+   <div class="end"></div>
+  </div><!-- footer -->
+ </body>
+</html>

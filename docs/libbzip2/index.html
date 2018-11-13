@@ -1,0 +1,529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>libbzip2 の使い方</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+ </head>
+ <body>
+  <div id="header">
+   <div class="left">How to use libbzip2</div>
+   <div class="right">Last modified: 8 March 2012</div>
+   <div class="end"></div>
+  </div><!-- header -->
+  <div id="body">
+   <h1>libbzip2 の使い方</h1>
+   <p id="authors">
+    <span class="author">矢田 晋</span>
+   </p><!-- authors -->
+   <p id="abstract">
+    <span id="heading">Abstract: </span>
+     libbzip2 は bzip2 で採用されている圧縮アルゴリズムのライブラリです．Burrows-Wheeler Transform (BWT) を用いることが特徴の一つであり，gzip と比較すると，圧縮・伸長には時間がかかるものの，優れた圧縮率を示すことが多くなります．本記事は，C 言語から libbzip2 を利用する方法の解説になっています．
+   </p><!-- abstract -->
+   <div class="section">
+    <h2><a name="introduction">はじめに</a></h2>
+    <p>
+     <a href="http://www.bzip.org/docs.html">libbzip2 のマニュアル</a>は<a href="http://www.bzip.org/">公式サイト</a>で提供されています．
+    </p>
+    <ul>
+     <li>
+      <a href="http://www.bzip.org/">http://www.bzip.org/（bzip2 : Home）</a>
+      <ul>
+       <li>bzip2, libbzip2 の公式サイトです．<a href="http://www.bzip.org/downloads.html">ソースコード</a>と<a href="http://www.bzip.org/docs.html">マニュアル</a>があります．</li>
+      </ul>
+     </li>
+    </ul>
+    <p>
+      libbzip2 では，<code>bz_stream</code> という構造体を用いる低水準インタフェースと，<code>BZFILE</code> という型を用いる高水準インタフェースが用意されています．低水準インタフェースはメモリ上で圧縮・伸長をおこなうためのインタフェースであり，高水準インタフェースは bzip2 形式のファイルを読み書きするためのインタフェースになっています．
+    </p>
+    <p>
+     以下，<a href="#install">libbzip2 のインストール方法</a>を紹介した後，<a href="#code">メモリ上での圧縮・伸長</a>と <a href="#bz2file">bzip2 形式のファイルを操作する関数群</a>について説明します．また，libbzip2 を用いて圧縮・伸長をおこなうプログラムの<a href="#sample">サンプルコード</a>を用意しました．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="install">インストール</a></h2>
+    <div class="subsection">
+     <h3>Debian 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo aptitude install libbz2-dev</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ sudo apt-get install libbz2-dev</pre>
+     </div><!-- float -->
+     <p>
+      Debian 系の環境であれば，<kbd>aptitude</kbd> を使って簡単にインストールできます．インストールには root 権限が必要なので，必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．古い環境であれば，<kbd>apt-get</kbd> になるかもしれません．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>Red Hat 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ sudo yum install bzip2-devel</pre>
+     </div><!-- float -->
+     <p>
+      Red Hat や CentOS であれば，<kbd>yum</kbd> を使って簡単にインストールできます．こちらも必要に応じて <kbd>sudo</kbd> や <kbd>su</kbd> を使ってください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>SUSE Linux 系の環境における開発用パッケージのインストール</h3>
+     <div class="float">
+      <pre class="console">$ zypper install libbz2-devel</pre>
+     </div><!-- float -->
+     <p>
+      openSUSE では <kbd>zypper</kbd> を使ってインストールできるようです．必要に応じて <kbd>su</kbd> を使ってください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>ソースコードからのインストール</h3>
+     <div class="float">
+      <pre class="console">$ wget http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz
+$ tar zxf bzip2-1.0.6.tar.gz
+$ cd bzip2-1.0.6
+$ make
+$ sudo make install</pre>
+     </div><!-- float -->
+     <p>
+      ソースコードの tarball は<a href="http://www.bzip.org/downloads.html">公式サイトのダウンロードページ</a>からダウンロードできます．ブラウザや <kbd>wget</kbd> により tarball をダウンロードした後は，<kbd>make</kbd>, <kbd>make install</kbd> という一手順でインストールします．libbzip2 を軽く試してみるのであれば，<kbd>make</kbd> まで終わった時点で，<kbd>bzlib.h</kbd>, <kbd>libbz2.a</kbd> のみをコピーして使うことも可能です．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>インストールの確認</h3>
+     <div class="float">
+      <pre class="code">// test.c
+#include &lt;bzlib.h&gt;
+int main(void) {
+  bz_stream strm = { .bzalloc = NULL, .bzfree = NULL, .opaque = NULL };
+  BZ2_bzCompressInit(&amp;strm, 9, 0, 0);
+  BZ2_bzCompressEnd(&amp;strm);
+  return 0;
+}</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="console">$ gcc -Wall -std=c99 test.c -lbz2</pre>
+     </div><!-- float -->
+     <p>
+      簡単なソースコードをコンパイル・リンクしてみれば，libbzip2 が問題なくインストールされているかどうか分かります．リンクにおいては，libbzip2 を指定するオプション（<kbd>-lbz2</kbd>）が必要になります．
+     </p>
+     <p>
+      サンプルは C 言語のコードになっています．<kbd>gcc</kbd> では問題なくコンパイルできますが，<kbd>g++</kbd> ではエラーになるのでご注意ください．<var>strm</var> の初期化コードが気になる方は，<a href="http://seclan.dll.jp/c99d/c99d07.htm#dt19991025">プログラミング言語 C の新機能</a>をご覧ください．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="code">圧縮・伸長</a></h2>
+    <div class="subsection">
+     <h3>圧縮・伸長の概要</h3>
+     <div class="float">
+      <pre class="code">typedef struct {
+  char *next_in;                // 入力位置
+  unsigned int avail_in;        // 入力データの残りバイト数
+  unsigned int total_in_lo32;   // 入力データの合計バイト数（下位 32 ビット）
+  unsigned int total_in_hi32;   // 入力データの合計バイト数（上位 32 ビット）
+
+  char *next_out;               // 出力位置
+  unsigned int avail_out;       // 出力バッファの残りバイト数
+  unsigned int total_out_lo32;  // 出力データの合計バイト数（下位 32 ビット）
+  unsigned int total_out_hi32;  // 出力データの合計バイト数（上位 32 ビット）
+
+  void *state;                  // 内部状態
+
+  void *(*bzalloc)(void *, int, int);  // メモリの確保に用いる関数
+  void (*bzfree)(void *, void *);      // メモリの解放に用いる関数
+  void *opaque;                        // bzalloc と bzfree に渡すポインタ
+} bz_stream;</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">z_stream strm;
+strm.bzalloc = NULL;
+strm.bzfree = NULL;
+strm.opaque = NULL;</pre>
+     </div><!-- float -->
+     <p>
+      libbzip2 による圧縮・伸長では，<code>bz_stream</code> という構造体を利用することになります．<code>bz_stream</code> の役割は zlib における <code>z_stream</code> に相当し，オブジェクトを作成した直後に，<var>bzalloc</var>, <var>bzfree</var>, <var>opaque</var> を設定しておく必要があります．<var>bzalloc</var>, <var>bzfree</var> にはメモリの確保・解放に用いる関数のポインタ，<var>opaque</var> には引数を指定できるようになっていますが，基本的に使い方では，デフォルトの設定となる <var>NULL</var> を代入しておけば問題ありません．
+     </p>
+     <p>
+      <code>bz_stream</code> のオブジェクトを初期化した後は，圧縮する場合と伸長する場合とで呼び出すべき関数が異なります．圧縮する場合は，<code>BZ2_bzCompressInit()</code> で初期設定，<code>BZ2_bzCompress()</code> で圧縮，<code>BZ2_bzCompressEnd()</code> で終了処理となります．伸長する場合は，<code>BZ2_bzDecompressInit()</code> で初期設定，<code>BZ2_bzDecompress()</code> で伸長，<code>BZ2_bzDecompressEnd()</code> で終了処理となります．
+     </p>
+     <p>
+      圧縮前後のデータをすべてメモリ上に展開できるときや，メモリマップト I/O によりファイル全体をメモリ上にマップできるときなど，データをひとまとめにして圧縮できる状況では，<code>BZ2_bzBuffToBuffCompress()</code> を使って一息に圧縮することが可能です．同様に，<code>BZ2_bzBuffToBuffDecompress()</code> を使って一息に伸長することも可能です．これらの関数を用いる場合，<code>bz_stream</code> は不要になります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>圧縮</h3>
+     <div class="float">
+      <pre class="code">int BZ2_bzCompressInit(bz_stream *strm,
+                       int blockSize100k,
+                       int verbosity,
+                       int workFactor);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = BZ2_bzCompressInit(&amp;strm, 9, 0, 0);
+assert(ret == BZ_OK);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮の初期設定には <code>BZ2_bzCompressInit()</code> を使います．第 1 引数である <var>strm</var> は，<var>bzalloc</var>, <var>bzfree</var>, <var>opaque</var> を設定した <code>bz_stream</code> のオブジェクトを受け取るようになっています．第 2 引数である <var>blockSize100k</var>には，圧縮に用いるブロックサイズを指定するようになっています，ブロックサイズは <var>100,000</var> 単位であり，指定できる値の範囲は <var>1</var> 以上 <var>9</var> 以下です．おおよそのメモリ消費は <var>(4 + (8 x blockSize100k)) x 100kB</var> により算出できます．標準的なコマンドである <kbd>bzip2</kbd> が用いるデフォルトのブロックサイズは <var>9</var> であり，最も良い圧縮率を示す設定になっています．新しい PC は大容量のメモリを搭載しているので，特段の理由がない限り，<var>9</var> で問題ないと思います．次に，第 3 引数である <var>verbose</var> には <var>0</var> 以上 <var>4</var> 以下の値を指定するようになっています．<var>0</var> のときは静かにしていますが，値を大きくするにしたがって徐々に小煩くなります．デバッグに有用なオプションです．最後に，第 4 引数である <var>workFactor</var> には，標準のアルゴリズムで上手くソートできないときの振る舞いを指定するようになっています．指定できる値の範囲は <var>0</var> 以上 <var>250</var> 以下であり，大きいほど標準のアルゴリズムで粘ります．ただし，<var>0</var> のときはデフォルトの設定である <var>30</var> を使うようになっています．<code>BZ2_bzCompressInit()</code> は成功すると <var>BZ_OK</var> を返し，失敗すると <var>BZ_CONFIG_ERROR</var>, <var>BZ_PARAM_ERROR</var>, <var>BZ_MEM_ERROR</var> のいずれかを返します．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzCompress(bz_stream *strm, int action);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int action = BZ_RUN;
+int ret = BZ_OK;
+do {
+  strm.next_in = (char *)...;
+  strm.avail_in = ...;
+  if (/* 入力が尽きていれば */) {
+    action = BZ_FINISH;
+  }
+  do {
+    strm.next_out = (char *)...;
+    strm.avail_out = ...;
+    ret = BZ2_bzCompress(&amp;strm, action);
+    assert(ret != BZ_SEQUENCE_ERROR);
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+  assert(strm.avail_in == 0);
+} while (action != BZ_FINISH);
+assert(ret == BZ_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      圧縮には <code>BZ2_bzCompress()</code> を使います．第 1 引数には入力データと出力バッファを設定した <code>bz_stream</code> のオブジェクト，第 2 引数には <var>BZ_RUN</var> を指定します．ただし，すべての入力データを指定した後は，圧縮を完了させるために <var>BZ_FINISH</var> を指定します．また，<var>BZ_FLUSH</var> を指定することにより，圧縮中のブロックを打ち切って出力を強制することも可能ですが，この機能を使う機会は少ないと思います．
+     </p>
+     <p>
+      入力データの設定については，<code>bz_stream</code> のメンバである <var>next_in</var>, <var>avail_in</var> に対しておこないます．出力バッファの設定については，<code>bz_stream</code> のメンバである <var>next_out</var>, <var>avail_out</var> に対しておこないます．<code>BZ2_bzCompress()</code> を呼び出すときは，<var>avail_out</var> が <var>0</var> にならないように注意してください．なお，<var>next_in</var>, <var>next_out</var> は <code>char</code> のポインタになっているので，明示的に型変換しないとコンパイラに警告されるかもしれません．
+     </p>
+     <div class="float">
+      <table>
+       <caption><code>BZ2_bzCompress()</code> の第 2 引数と返り値の関係</caption>
+       <tr>
+        <th>第 2 引数</th><th>返り値</th>
+       </tr>
+       <tr>
+        <td><var>BZ_RUN</var></td>
+        <td><var>BZ_RUN_OK</var></td>
+       </tr>
+       <tr>
+        <td><var>BZ_FLUSH</var></td>
+        <td><var>BZ_RUN_OK</var>, <var>BZ_FLUSH_OK</var></td>
+       </tr>
+       <tr>
+        <td><var>BZ_FINISH</var></td>
+        <td><var>BZ_FINISH_OK</var>, <var>BZ_STREAM_END</var></td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzCompress()</code> の返り値は，<code>bz_stream</code> の内部状態を示すものとエラーを示すものに分けることができます．内部状態を示す返り値は <var>BZ_RUN_OK</var>, <var>BZ_FLUSH_OK</var>, <var>BZ_FINISH_OK</var>, <var>BZ_STREAM_END</var> の 4 種類であり，次に取るべき行動を示しています．<var>BZ_STREAM_END</var> 以外については，圧縮が継続していることを示しているので，続けて <code>BZ2_bzCompress()</code> を呼び出すことになります．ただし，返り値が <var>BZ_FLUSH_OK</var> のときは，<var>BZ_RUN_OK</var> が返されるまで， <var>BZ_FLUSH</var> を第 2 引数として呼び出し続ける必要があります．また，<var>BZ_FINISH_OK</var> のときは，<var>BZ_STREAM_END</var> が返されるまで <var>BZ_FINISH</var> を第 2 引数として呼び出すことになります．<var>BZ_STREAM_END</var> は圧縮が完了したことを示しています．エラーを示す返り値は <var>BZ_PARAM_ERROR</var>, <var>BZ_SEQUENCE_ERROR</var> の 2 種類であり，引数が <var>NULL</var> の場合や内部状態と第 2 引数が合っていない場合など，プログラムに問題があることを意味します．
+     </p>
+     <div class="float">
+      <pre class="code">BZ2_bzCompressEnd(&amp;strm);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzCompressInit()</code> で初期設定をおこなった <code>bz_stream</code> のオブジェクトについては，<code>BZ2_bzCompressEnd()</code> を使って，内部状態に割り当てられたメモリを解放する必要があります．zlib とは異なり，圧縮が完了していない状態で呼び出しても <var>BZ_OK</var> を返すようになっています．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>伸長</h3>
+     <div class="float">
+      <pre class="code">int BZ2_bzDecompressInit(bz_stream *strm,
+                         int verbosity,
+                         int small);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">int ret = BZ2_bzDecompressInit(&amp;strm, 0, 0);
+assert(ret == BZ_OK);</pre>
+     </div><!-- float -->
+     <p>
+      伸長の初期設定には <code>BZ2_bzDecompressInit()</code> を使います．第 1 引数である <var>strm</var> は，<var>bzalloc</var>, <var>bzfree</var>, <var>opaque</var> を設定した <code>bz_stream</code> のオブジェクトを受け取るようになっています．zlib とは異なり，<var>next_in</var>, <var>avail_in</var> を設定しておく必要はありません．第 2 引数である <var>verbose</var> には <var>0</var> 以上 <var>4</var> 以下の値を指定するようになっています．<var>0</var> のときは静かにしていますが，値を大きくするにしたがって徐々に小煩くなります．デバッグに有用なオプションです．第 3 引数である <var>small</var> により，伸長に用いるアルゴリズムを選択できるようになっています．<var>small</var> が <var>0</var> 以外の値であれば，時間がかかる代わりにメモリ消費を抑えるアルゴリズムを使用します．伸長に必要なメモリは，<var>small</var> が <var>0</var> のときは <var>(1 + (4 x blockSize100k)) x 100kB</var> 程度，<var>0</var> 以外のときは <var>(1 + (2.5 x blockSize100k)) x 100kB</var> 程度になります．<code>BZ2_bzDecompressInit()</code> は成功すると <var>BZ_OK</var> を返し，失敗すると <var>BZ_CONFIG_ERROR</var>, <var>BZ_PARAM_ERROR</var>, <var>BZ_MEM_ERROR</var> のいずれかを返します．
+     </p>
+     <div class="float">
+      <pre class="code">int ret = BZ_OK;
+do {
+  strm.next_in = (char *)...;
+  strm.avail_in = ...;
+  assert(strm.avail_in != 0);
+  do {
+    strm.next_out = (char *)...;
+    strm.avail_out = ...;
+    ret = BZ2_bzDecompress(&amp;strm);
+    assert((ret == BZ_OK) ||
+           (ret == BZ_STREAM_END));
+    // 出力バッファの中身を処理
+  } while (strm.avail_out == 0);
+} while (ret != BZ_STREAM_END);</pre>
+     </div><!-- float -->
+     <p>
+      初期設定の後は，入力データと出力バッファを設定した <code>bz_stream</code> のオブジェクトを引数として <code>BZ2_bzDecompress()</code> を呼び出し，伸長をおこないます．入出力の設定方法は，圧縮されたデータが入力となり，伸長されたデータが出力となることを除けば，圧縮の場合と同じです．<var>next_in</var>, <var>avail_in</var> に入力データ，<var>next_out</var>, <var>avail_out</var> に出力バッファを設定します．<code>BZ2_bzCompress()</code> を呼び出すときと同様に，<var>avail_out</var> が <var>0</var> にならないように注意してください．
+     </p>
+     <p>
+      <code>BZ2_bzDecompress()</code> の返り値は，<var>BZ_OK</var>, <var>BZ_STREAM_END</var>, <var>BZ_PARAM_ERROR</var>, <var>BZ_DATA_ERROR</var>, <var>BZ_DATA_ERROR_MAGIC</var>, <var>Z_MEM_ERROR</var> の 6 種類です．伸長が問題なく継続していれば <var>BZ_OK</var>，無事に完了すれば <var>BZ_STREAM_END</var> になります．<var>strm</var> が <var>NULL</var> の場合や，<var>strm->avail_in</var> が <var>0</var> の場合など，引数が明らかに異常なときは <var>BZ_PARAM_ERROR</var> が返り値になります．<var>BZ_DATA_ERROR</var>, <var>BZ_DATA_ERROR_MAGIC</var> は入力データが bzip2 形式に適合しないことを示し，<var>Z_MEM_ERROR</var> はメモリの確保に失敗したことを示します．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzDecompressEnd(bz_stream *strm);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzDecompressInit()</code> で初期設定をおこなった <code>bz_stream</code> のオブジェクトについては，<code>BZ2_bzDecompressEnd()</code> を使って，内部状態に割り当てられたメモリを解放する必要があります．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>一括圧縮・一括伸長</h3>
+     <div class="float">
+      <pre class="code">int BZ2_bzBuffToBuffCompress(char *dest,
+                             unsigned int *destLen,
+                             char *source,
+                             unsigned int sourceLen,
+                             int blockSize100k,
+                             int verbosity,
+                             int workFactor);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">unsigned destLen = sourceLen + (sourceLen / 100) + 600;
+char *dest = (char *)malloc(destLen);
+assert(dest != NULL);
+int ret = BZ2_bzBuffToBuffCompress(
+    dest, destLen, source, sourceLen, 9, 0, 0);
+assert(ret == BZ_OK);</pre>
+     </div><!-- float -->
+     <p>
+      <code>bz_stream</code> を介することなく一息に圧縮をおこなうインタフェースとして，<code>BZ2_bzBuffToBuffCompress()</code> という関数が用意されています．入力データと出力バッファをそれぞれ連続空間に配置できる状況に限られますが，とても簡単に圧縮できるという利点があります．圧縮後のデータが確実に収まる出力バッファのサイズは，<var>入力データのサイズ x 1.01 + 600bytes</var> により算出されます．
+     </p>
+     <p>
+      <code>BZ2_bzBuffToBuffCompress()</code> は，第 1 引数，第 2 引数として出力バッファを受け取り，第 3 引数，第 4 引数として入力データを受け取るようになっています．圧縮が成功したときは，第 2 引数である <var>destLen</var> の参照先に出力データのサイズが格納されます．第 5 引数から第 7 引数までは，<code>BZ2_bzCompressInit()</code> の第 2 引数から第 4 引数までと同じ意味を持っています．<code>BZ2_bzBuffToBuffCompress()</code> の返り値は，<code>BZ2_bzCompressInit()</code> が持つ 4 種類の返り値に対して，出力バッファのサイズ不足を意味する <var>BZ_OUTBUFF_FULL</var> を加えた 5 種類になります．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzBuffToBuffDecompress(char *dest,
+                               unsigned int *destLen,
+                               char *source,
+                               unsigned int sourceLen,
+                               int small,
+                               int verbosity);</pre>
+     </div><!-- float -->
+     <p>
+      伸長には <code>BZ2_bzBuffToBuffDecompress()</code> を使います．<code>BZ2_bzBuffToBuffCompress()</code> と同様に，第 4 引数までは出力バッファと入力データを受け取るという役割を持っており，第 5 引数以降は <code>BZ2_bzDecompressInit()</code> の第 2 引数以降と同じ意味を持っています．入力データのサイズから出力バッファに割り当てるべきサイズを正確に求めることは難しいので，圧縮の段階で元のサイズを保存しておくのが確実です．<code>BZ2_bzBuffToBuffDecompress()</code> の返り値は，<code>BZ2_bzDecompressInit()</code>, <code>BZ2_bzDecompress()</code> が持つ 7 種類の返り値に対して，出力バッファのサイズ不足を意味する <var>BZ_OUTBUFF_FULL</var> を加えた 8 種類になります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="bz2file">ファイル操作</a></h2>
+    <div class="subsection">
+     <h3>ファイル操作の概要</h3>
+     <div class="float">
+      <pre class="code">typedef void BZFILE;</pre>
+     </div><!-- float -->
+     <p>
+      libbzip2 には bzip2 形式のファイルを操作するための高水準インタフェースが用意されています．主要な構成は，ファイルのハンドルとして使われる <code>BZFILE *</code>，読み込み用の関数群である <code>BZ2_bzRead*()</code>，書き込み用の関数群である <code>BZ2_bzWrite*()</code> です．これらの関数には，第 1 引数である <var>bzerror</var> の参照先にエラー番号を格納するという共通点があります．関数を呼び出した後は，このエラー番号がにより成否を確認するようになっています．<var>BZ_OK</var> は成功，<var>BZ_OK</var> 以外は失敗を意味します．また，エラー番号が <var>BZ_IO_ERROR</var> のときは，<var>errno</var> や <code>perror()</code>, <code>strerror()</code> を利用して，ファイル入出力に関するエラーの内容を調べることができます．
+     </p>
+     <p>
+      libbzip2 の高水準インタフェースは，zlib におけるファイル操作用のインタフェースと大きく異なっています．そのため，libbzip2 の高水準インタフェースを利用して gzip 形式から bzip2 形式へと移行しようとすると，かなりの手間がかかります．そこで，zlib との互換性を高めるために，gzip 形式のファイルを操作する関数のいくつかに対して，代替となる関数が用意されています．ただし，まだ libbzip2 の一部として正式に採用されているわけではありません．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>bzip2 形式のファイルから読み込む</h3>
+     <div class="float">
+      <pre class="code">BZFILE *BZ2_bzReadOpen(int *bzerror,
+                       FILE *file,
+                       int verbosity,
+                       int small,
+                       void *unused,
+                       int nUnused);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzReadOpen</code> は標準のファイルハンドルである <code>FILE *</code> を libbzip2 のファイルハンドルに相当する <code>BZFILE *</code> に関連付ける関数です．第 2 引数である <var>file</var> を関連付けた <code>BZFILE *</code> を返すようになっています．第 3 引数の <var>verbosity</var> と第 4 引数の <var>small</var> は，<code>BZ2_bzDecompressInit()</code> における同名の引数と同じ意味を持っています．
+     </p>
+     <p>
+      残る引数である <var>unused</var>, <var>nUnused</var> は，<var>file</var> からの読み込みより前に入力するデータを受け取るために用意されています．入力できるデータの大きさは最大で <var>BZ_MAX_UNUSED</var> バイトです．ブロック単位のファイル読み込みなどにより，圧縮されたデータの先頭がメモリ上に展開されている状況において有用です．想定されている用途は，<code>BZ2_bzReadGetUnused()</code> により受け取ったデータの入力です．入力がないときは，<var>unused</var> に <var>NULL</var>，<var>nUnused</var> に <var>0</var> を渡してください．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzRead(int *bzerror,
+               BZFILE *bzfile,
+               void *buf,
+               int len);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzRead()</code> は，第 2 引数である <var>bzfile</var> から，第 3 引数である <var>buf</var> を始点とする出力バッファに，第 4 引数である <var>len</var> を長さの上限としてデータを読み込む関数です．実際に読み込まれたデータの長さが返り値になります．長さは byte 単位です．圧縮されたデータの終端に到達したときや，ファイルの読み込みにおいてエラーが起きたときなど，返り値が <var>len</var> より小さくなることがあります．
+     </p>
+     <div class="float">
+      <pre class="code">void BZ2_bzReadGetUnused(int *bzerror,
+                         BZFILE *bzfile,
+                         void **unused,
+                         int *nUnused);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzRead()</code> はブロック単位でファイルからの読み込みをおこなうため，圧縮されたデータの後に別のデータが保存されている場合，圧縮されたデータの終端を越えて読み込んでしまうことがあります．そのため，<code>BZ2_bzRead()</code> により <var>bzerror</var> の参照先が <var>BZ_SEQUENCE_END</var> で上書きされた後，<code>BZ2_bzReadClose()</code> を呼び出す前に，読み込み過ぎたデータを<code>BZ2_bzReadGetUnused()</code> によって取り出せるようになっています．
+     </p>
+     <div class="float">
+      <pre class="code">void BZ2_bzReadClose(int *bzerror,
+                     BZFILE *bzfile);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzReadClose()</code> は，第 2 引数の <var>bzfile</var> を閉じる関数です．<var>bzfile</var> に関連付けられていたファイルハンドルについては，呼び出し側で閉じる必要があります．必要に応じて，<code>fclose()</code> や <code>pclose()</code> により閉じてください．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>bzip2 形式のファイルに書き込む</h3>
+     <div class="float">
+      <pre class="code">BZFILE *BZ2_bzWriteOpen(int *bzerror,
+                        FILE *file,
+                        int blockSize100k,
+                        int verbosity,
+                        int workFactor);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzWriteOpen</code> は標準のファイルハンドルである <code>FILE *</code> を libbzip2 のファイルハンドルに相当する <code>BZFILE *</code> に関連付ける関数です．第 2 引数である <var>file</var> を関連付けた <code>BZFILE *</code> を返すようになっています．残りの引数は，<code>BZ2_bzCompressInit()</code> における同名の引数と同じ意味を持っています．
+     </p>
+     <div class="float">
+      <pre class="code">void BZ2_bzWrite(int *bzerror,
+                 BZFILE *bzfile,
+                 void *buf,
+                 int len);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzWrite()</code> は，第 2 引数である <var>bzfile</var> に対して，第 3 引数と第 4 引数である <var>buf</var> と <var>len</var> により与えられる入力データを書き込む関数です．書き込みの成否は，<var>bzerror</var> によってのみ確認できます．
+     </p>
+     <div class="float">
+      <pre class="code">void BZ2_bzWriteClose(int *bzerror,
+                      BZFILE* bzfile,
+                      int abandon,
+                      unsigned int* nbytes_in,
+                      unsigned int* nbytes_out);</pre>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">void BZ2_bzWriteClose64(int *bzerror,
+                        BZFILE* bzfile,
+                        int abandon,
+                        unsigned int *nbytes_in_lo32,
+                        unsigned int *nbytes_in_hi32,
+                        unsigned int *nbytes_out_lo32,
+                        unsigned int *nbytes_out_hi32);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzWriteClose()</code> と <code>BZ2_bzWriteClose64()</code> は，第 2 引数である <var>bzfile</var> に対して，内部状態として保持しているデータを圧縮し，その結果をファイルに書き込むことと，メモリの解放を指示する関数です．ただし，第 3 引数である <var>abandon</var> が <var>0</var> でないときは，圧縮や書き込みを省略し，メモリの解放のみを指示します．残る引数である <var>nbytes_in</var>, <var>nbytes_out</var> およびに <var>nbytes_in_lo32</var>, <var>nbytes_in_hi32</var>, <var>nbytes_out_lo32</var>, <var>nbytes_out_hi32</var> が <var>NULL</var> でないときは，参照先が入出力の合計バイト数によって上書きされます．
+     </p>
+    </div><!-- subsection -->
+    <div class="subsection">
+     <h3>zlib との互換性を高めるためのインタフェース</h3>
+     <div class="float">
+      <table>
+       <caption>libbzip2, zlib, 標準ライブラリにおける関数の対応</caption>
+       <tr>
+        <th>libbzip2</th>
+        <th>zlib</th>
+        <th>標準ライブラリ</th>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzopen()</code></td>
+        <td><code>gzopen()</code></td>
+        <td><code>fopen()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzdopen()</code></td>
+        <td><code>gzdopen()</code></td>
+        <td><code>fdopen()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzclose()</code></td>
+        <td><code>gzclose()</code></td>
+        <td><code>fclose()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzread()</code></td>
+        <td><code>gzread()</code></td>
+        <td><code>fread()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzwrite()</code></td>
+        <td><code>gzwrite()</code></td>
+        <td><code>fwrite()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzflush()</code></td>
+        <td><code>gzflush()</code></td>
+        <td><code>fflush()</code></td>
+       </tr>
+       <tr>
+        <td><code>BZ2_bzerror()</code></td>
+        <td><code>gzerror()</code></td>
+        <td><code>ferror()</code></td>
+       </tr>
+      </table>
+     </div><!-- float -->
+     <div class="float">
+      <pre class="code">BZFILE *BZ2_bzopen(const char *path, const char *mode);
+BZFILE *BZ2_bzdopen(int fd, const char *mode);
+void BZ2_bzclose(BZFILE* b);</pre>
+     </div><!-- float -->
+     <p>
+      libbzip2 の高水準インタフェースだけでは zlib から libbzip2 への移行が難しいので，zlib との互換性を高めるために，gzip 形式のファイルを操作する関数のいくつかに対して，代替となる関数が用意されています．ただし，まだ libbzip2 の一部として正式に採用されているわけではありません．ドキュメントにも仕様が明示されていないので，以下の説明は間違っているかもしれません．
+     </p>
+     <p>
+      <code>BZ2_bzopen()</code> によりファイルを開くことができます．<code>fopen()</code> と同様に，第 1 引数にファイル名，第 2 引数にモードを指定するようになっています．ただし，読み書き両用を示す <var>+</var> を指定することはできません．また，書き込み用にファイルを開く場合，<code>gzopen()</code> における圧縮レベルの代わりに，ブロックサイズを <var>1</var> 以上 <var>9</var> 以下の数字によって指定できます．返り値の型は <code>BZFILE *</code> であり，ファイルを開くことができれば，<var>NULL</var> 以外の値になります．このハンドルは以降の操作に必要であり，操作の後で <code>BZ2_bzclose()</code> を使って閉じる必要があります．
+     </p>
+     <p>
+      既に開いているファイル記述子があれば，<code>BZ2_bzdopen()</code> により <code>BZFILE *</code> と関連付けることができます．<code>fdopen()</code> と同様に，第 1 引数にファイル記述子，第 2 引数にモードを指定するようになっています．また，<code>BZ2_bzdopen()</code> と同様に，<var>+</var> の指定ができない代わりに，ブロックサイズ（<var>1</var> ～ <var>9</var>）の指定ができるようになっています．<code>BZ2_bzclose()</code> は関連付けられたファイル記述子も閉じるので，ファイル記述子を閉じずに残しておきたいときは，<code>dup()</code> などを使って複製しておくようにしてください．
+     </p>
+     <p>
+      <code>BZ2_bzopen()</code>, <code>BZ2_bzdopen()</code> により作成したファイルハンドルは，<code>BZ2_bzclose()</code> を使って閉じる必要があります．書き込み用のファイルについては，内部状態として保持されているデータをファイルに書き込んでから閉じるようになっています．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzread(BZFILE* b, void* buf, int len);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzread()</code> は，第 2 引数の <var>buf</var> と第 3 引数である <var>len</var> によって与えられる出力バッファにデータを読み込む関数です．<code>gzread()</code>, <code>fread()</code> に対応する関数ですが，整数の型が <code>int</code> に統一されていることや，サイズを指定する引数が統合されているという違いがあります．ファイルの終端とエラーを区別するかどうかは不明です．
+     </p>
+     <div class="float">
+      <pre class="code">int BZ2_bzwrite(BZFILE* b, void* buf, int len);
+int BZ2_bzflush(BZFILE* b);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzwrite()</code> は，第 2 引数の <var>buf</var> と第 3 引数である <var>len</var> によって与えられる入力データをファイルに書き込む関数です．<code>gzwrite()</code>, <code>fwrite()</code> に対応する関数ですが，整数の型が <code>int</code> に統一されていることや，サイズを指定する引数が統合されているという違いがあります．<code>BZ2_bzflush()</code> は何もしません．
+     </p>
+     <div class="float">
+      <pre class="code">const char *BZ2_bzerror(BZFILE *b, int *errnum);</pre>
+     </div><!-- float -->
+     <p>
+      <code>BZ2_bzerror()</code> は，エラー番号を第 2 引数である <var>errnum</var> の参照先に上書きし，エラーメッセージを返すようになっています．ただし，エラーがファイルの操作に起因する場合，エラー番号は <var>BZ_IO_ERROR</var> になり，エラーの詳細は <var>errno</var> や <code>perror()</code> で確認する必要があります．
+     </p>
+    </div><!-- subsection -->
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="sample">サンプルコード</a></h2>
+    <div class="float">
+     <pre class="console">$ gcc -Wall -O2 -std=c99 libbzip2-test.c -lbz2 -o libbzip2-test</pre>
+    </div><!-- float -->
+    <p>
+     bzip2 形式の圧縮・伸長をおこなうプログラムのサンプルコードとして <a href="libbzip2-test.c">libbzip2-test.c</a> を用意しました．C99 の機能を使っているので，<kbd>gcc</kbd> には <kbd>-std=c99</kbd> を渡すようにしてください．
+    </p>
+    <div class="float">
+     <pre class="console">$ ./libbzip2-test --help
+Usage: ./libbzip2-test [OPTION]... [FILE]...
+Version: libbzip2-1.0.6, 6-Sept-2010
+Options:
+  -c, --compress         圧縮します (default)
+  -d, --decompress       伸長します
+  -b, --blocksize100k=[1-9]  ブロックサイズを指定します (default: 9)
+  -w, --workfactor=[0-250]   代替アルゴリズムに切り替えるまでの
+                             頑張り具合を指定します (default: 30)
+  -s, --small            伸長時にメモリ消費の少ないアルゴリズムを使います
+  -o, --output=[FILE]    出力ファイルを指定します (default: stdout)
+  -v, --verbosity=[0-4]  詳細な情報を表示するようにします (default: 0)
+  -h, --help             このヘルプを表示します</pre>
+    </div><!-- float -->
+    <p>
+     コマンドライン引数による圧縮形式や圧縮レベルの切り替えが可能になっています．<kbd>-h</kbd> もしくは <kbd>-help</kbd> をオプションとして渡すことにより，libbzip2 のバージョンとコマンドライン引数の一覧を確認することができます．
+    </p>
+   </div><!-- section -->
+   <div class="section">
+    <h2><a name="conclusion">おわりに</a></h2>
+    <p>
+     本記事では libbzip2 の基本的な使い方を説明しました．大抵のアプリケーションについては対処できるようになっています．より高度な使い方については，<a href="http://www.bzip.org/docs/html">公式サイトのドキュメント</a>を参照してください．
+    </p>
+   </div><!-- section -->
+  </div><!-- body -->
+  <div id="footer">
+   <div class="left">How to use libbzip2</div>
+   <div class="right">
+  ‮moc.liamg@atay.umusus‭
+   </div>
+   <div class="end"></div>
+  </div><!-- footer -->
+ </body>
+</html>
