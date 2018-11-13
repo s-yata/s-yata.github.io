@@ -23,7 +23,7 @@ N-gram コーパスについては，テキストアーカイブに出現する�
 - ウェブ検索には Yahoo! JAPAN 検索 Web API を利用しました．
 - ウェブコーパスのシードには [IPAdic](https://sourceforge.jp/projects/ipadic/) を利用しました．
 - 文字コードの変換には [日本語用のパッチ](http://www2d.biglobe.ne.jp/~msyk/software/libiconv-patch.html) を適用した [libiconv](https://www.gnu.org/software/libiconv/) を利用しました．
-- Unicode の正規化には [ICU](https://site.icu-project.org/) を利用しました．
+- Unicode の正規化には [ICU](http://site.icu-project.org/) を利用しました．
 - 形態素解析には [MeCab](https://taku910.github.io/mecab/) を利用しました．
 - コーパスの圧縮には [XZ Utils](https://tukaani.org/xz/) を利用しました．
 - 他にも様々なソフトウェアを利用しました．
