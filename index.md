@@ -2,8 +2,6 @@
 layout: home
 ---
 
-## Links
-
 名前|概要
 --|--
 [雑記](https://s-yata.blogspot.com/)|2018-10 以降の雑記
