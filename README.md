@@ -1,0 +1,1 @@
+# s-yata.github.io
