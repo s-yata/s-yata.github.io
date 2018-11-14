@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Projects
+title: プロジェクト
 ---
 
 Google Code Archive に保存されているプロジェクトの一覧です．
