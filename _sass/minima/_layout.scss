@@ -11,9 +11,11 @@
 }
 
 .site-title {
-  @include relative-font-size(1.625);
+  // @include relative-font-size(1.625);
+  @include relative-font-size(1.5);
   font-weight: 300;
-  line-height: $base-line-height * 1.375;
+  // line-height: $base-line-height;
+  line-height: $base-line-height * 1.5;
   letter-spacing: -1px;
   margin-bottom: 0;
   float: left;
@@ -205,7 +207,7 @@
 }
 
 .post-list-heading {
-  @include relative-font-size(1.75);
+  // @include relative-font-size(1.75);
 }
 
 .post-list {
@@ -224,7 +226,7 @@
 
 .post-link {
   display: block;
-  @include relative-font-size(1.5);
+  // @include relative-font-size(1.5);
 }
 
 
@@ -238,39 +240,42 @@
 
 .post-title,
 .post-content h1 {
-  @include relative-font-size(2.625);
+  // @include relative-font-size(2.625);
+  @include relative-font-size(1.75);
   letter-spacing: -1px;
   line-height: 1;
 
-  @media screen and (min-width: $on-large) {
-    @include relative-font-size(2.625);
-  }
+  // @media screen and (min-width: $on-large) {
+  //   @include relative-font-size(2.625);
+  // }
 }
 
 .post-content {
   margin-bottom: $spacing-unit;
 
   h2 {
-    @include relative-font-size(1.75);
+    // @include relative-font-size(1.75);
+    @include relative-font-size(1.5);
 
-    @media screen and (min-width: $on-large) {
-      @include relative-font-size(2);
-    }
+    // @media screen and (min-width: $on-large) {
+    //   @include relative-font-size(2);
+    // }
   }
 
   h3 {
-    @include relative-font-size(1.375);
+    // @include relative-font-size(1.375);
+    @include relative-font-size(1.25);
 
-    @media screen and (min-width: $on-large) {
-      @include relative-font-size(1.625);
-    }
+    // @media screen and (min-width: $on-large) {
+    //   @include relative-font-size(1.625);
+    // }
   }
 
   h4 {
     @include relative-font-size(1.125);
 
-    @media screen and (min-width: $on-large) {
-      @include relative-font-size(1.25);
-    }
+    // @media screen and (min-width: $on-large) {
+    //   @include relative-font-size(1.25);
+    // }
   }
 }
