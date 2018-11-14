@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="index.css">
+ </head>
+ <body>
+  <h2>日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="">日本語ウェブコーパス 2010</a>
+  </p>
+  <div id="body">
+   <table id="nav">
+    <tr>
+     <th>
+      <a href="htmls/">HTML アーカイブ</a>
+     </th>
+     <td>
+      約 1 億件の HTML 文書<br>
+      圧縮時 197GB，展開時 3.25TB
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <a href="texts/">テキストアーカイブ</a>
+     </th>
+     <td>
+      HTML アーカイブから抽出されたテキスト<br>
+      圧縮時 69GB，展開時 396GB
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <s>形態素解析結果</s>
+     </th>
+     <td>
+      MeCab を使えば簡単に作成できるので削除しました．<br>
+      <s>タグなしテキストの形態素解析結果（MeCab）</s><br>
+      <s>圧縮時 115GB，展開時 4.36TB</s>
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <a href="ngrams/">N-gram コーパス</a>
+     </th>
+     <td>
+      形態素 N-gram：圧縮時 12.1GB，展開時 75.2GB<br>
+      文字 N-gram：圧縮時 11.8GB，展開時 81.7GB
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <a href="tags/">タグ使用頻度</a>
+     </th>
+     <td>
+      HTML タグの使用頻度（TF・DF）
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <a href="adsense/">セクションターゲット</a>
+     </th>
+     <td>
+      セクションターゲット（AdSence）の用例
+     </td>
+    </tr>
+    <tr>
+     <th>
+      <a href="https://code.google.com/archive/p/nwc-toolkit/">ツールキット</a>
+     </th>
+     <td>
+      テキストアーカイブや N-gram コーパスの作成ツール
+     </td>
+    </tr>
+   </table>
+   <div class="section">
+    <h3>概要</h3>
+    本コーパスの HTML アーカイブは，<a href="https://sourceforge.jp/projects/ipadic/">ipadic-2.7.0</a> の見出し語をシードとして，かつての <a href="https://developer.yahoo.co.jp/">Yahoo! Web API</a> による検索結果に含まれるウェブページを収集したものです．テキストの抽出においては，文字コードを UTF-8 に統一した後，いくつかの記号をデリミタとして文への分割をおこない，さらに文を構成する文字の種類や数によるフィルタリングを施しています．N-gram コーパスについては，テキストアーカイブに出現する頻度 10 以上の N-gram を収録しています．
+   </div>
+   <div class="section">
+    <h3>謝辞</h3>
+    本コーパスの作成においては，様々なウェブサービス，ツール，コーパスを利用させていただきました．開発者・研究者の皆様に感謝いたします．
+    <ul>
+     <li>コーパスの作成・保存・配布には <a href="https://aws.amazon.com/">Amazon Web Services</a> を利用しています．</li>
+     <li>ウェブ検索には Yahoo! JAPAN 検索 Web API を利用しています．</li>
+     <li>ウェブコーパスのシードには <a href="https://sourceforge.jp/projects/ipadic/">IPAdic</a> を利用しています．</li>
+     <li>文字コードの変換には <a href="http://www2d.biglobe.ne.jp/~msyk/software/libiconv-patch.html">日本語用のパッチ</a> を適用した <a href="https://www.gnu.org/software/libiconv/">libiconv</a> を利用しています．</li>
+     <li>Unicode の正規化には <a href="http://site.icu-project.org/">ICU</a> を利用しています．</li>
+     <li>形態素解析には <a href="https://taku910.github.io/mecab/">MeCab</a> を利用しています．</li>
+     <li>コーパスの圧縮には <a href="https://tukaani.org/xz/">XZ Utils</a> を利用しています．</li>
+     <li>他にも様々なソフトウェアを利用しています．</li>
+    </ul>
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>

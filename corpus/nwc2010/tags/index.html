@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>タグ使用頻度 - 日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="../index.css">
+ </head>
+ <body>
+  <h2>タグ使用頻度 - 日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="/corpus/nwc2010/">日本語ウェブコーパス 2010</a> /
+   <a href="">タグ使用頻度</a>
+  </p>
+  <div id="body">
+   <table id="nav">
+    <tr>
+     <th rowspan="3">
+      タグ使用頻度<br>
+      TF・DF
+     </th>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.10.xz">DF 10 以上</a>
+     </td>
+     <td>圧縮時 34.7MiB，伸長時 259MiB</td>
+    </tr>
+    <tr>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.100.xz">DF 100 以上</a>
+     </td>
+     <td>圧縮時 9.95MiB，伸長時 60.0MiB</td>
+    </tr>
+    <tr>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.1000.xz">DF 1000 以上</a>
+     </td>
+     <td>圧縮時 2,67MiB，伸長時 13.6MiB</td>
+    </tr>
+   </table>
+   <div class="section">
+    <h3>概要</h3>
+    HTML アーカイブにおけるタグの出現頻度を求めたデータです．各タグについて，単純な出現頻度（TF: Term Frequency, Term = Tag）と出現文書数（DF: Document Frequency）を求め，タブ区切りのデータを作成しました．ダウンロードできるのは，DF 10/100/1000 以上のタグを一覧にしたファイルです．<br>
+    タグのカウントにおいては，タグ・属性の名前を小文字に統一し，class, id, name 以外の属性を取り除きました．例えば，&lt;A HREF="index.html"&gt; は &lt;a&gt; としてカウントされていますが，&lt;a name="abc"&gt; と &lt;a&gt; は別々にカウントされています．オープンタグとクローズタグは別々にカウントされているので，&lt;a&gt; の代わりに &lt;/a&gt; の TF・DF を利用することも可能です．
+   </div>
+   <div class="section">
+    <h3>利用条件</h3>
+    特にありません．二次配布も自由です．
+   </div>
+   <div class="section">
+    <h3>ダウンロード</h3>
+    それほど大きなファイルではないので，気軽にダウンロードできます．
+    <table>
+     <tr>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.10.xz">DF 10 以上のタグ一覧（34.7MiB）</a>
+      </td>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.100.xz">DF 100 以上のタグ一覧（9.95MiB）</a>
+      </td>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/tags/tf-df-tag.1000.xz">DF 1000 以上のタグ一覧（2,67MiB）</a>
+      </td>
+     </tr>
+    </table>
+   </div>
+   <div class="section">
+    <h3>書式</h3>
+    TF，DF，タグという順番で，水平タブが区切りになっています．以下のサンプルを見た方が分かりやすいと思います．
+   </div>
+   <div class="section">
+    <h3>サンプル</h3>
+    タグ使用頻度のサンプルです．TF，DF，タグという順番になっています．
+    <pre>$ xz -cd tf-df-tag.1000.xz | sort -rnk 2 | head -5
+98018942	96534612	&lt;/title&gt;
+97813195	96403445	&lt;title&gt;
+97303827	96210846	&lt;head&gt;
+97435923	96167526	&lt;/head&gt;
+97366516	96105699	&lt;/html&gt;</pre>
+    <pre>$ xz -cd tf-df-tag.1000.xz | sort -rnk 2 | head -10000 | tail -5
+66382	66377	&lt;ul id="textLink"&gt;
+240661	66372	&lt;div class="POST_ADMIN"&gt;
+128514	66366	&lt;div class="more-wrap clearfix"&gt;
+66623	66356	&lt;a name="628"&gt;
+253659	66355	&lt;div class="associatelink_list"&gt;</pre>
+   </div>
+   <div class="section">
+    <h3>内容</h3>
+    各ファイルに含まれるタグの異なり数は以下のとおりです．
+    <table>
+     <tr>
+      <td></td>
+      <th>DF 10 以上</th>
+      <th>DF 100 以上</th>
+      <th>DF 1000 以上</th>
+     </tr>
+     <tr>
+      <th>タグの異なり数</th>
+      <td class="right">7,335,164</td>
+      <td class="right">1,655,963</td>
+      <td class="right">366,003</td>
+     </tr>
+    </table>
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>

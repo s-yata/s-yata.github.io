@@ -1,0 +1,101 @@
+p#path {}
+p#path a {
+ color: inherit;
+ text-decoration: none;
+ border-bottom: 1px dashed;
+}
+
+h2 {
+ font-size: 125%;
+}
+
+div#body {
+ line-height: 125%;
+}
+
+div#body table#nav {
+ border-collapse: separate;
+ border-spacing: 0.5em;
+}
+
+div#body table#nav tr th {
+ padding: 0.25em 0.5em;
+ border: 1px dashed;
+ border-left: 0.5em solid;
+ white-space: nowrap;
+}
+
+div#body table#nav tr th a {
+ vertical-align: middle;
+ padding-left: 1em;
+ padding-right: 1em;
+}
+
+div#body table#nav tr th a:hover {
+ padding-left: 0.5em;
+ padding-right: 0.5em;
+ border-left: 0.5em solid;
+ border-right: 0.5em solid;
+}
+
+div#body table#nav tr td {
+ padding: 0.25em 0.5em;
+ border: 1px dashed;
+ border-left: 0.25em solid;
+}
+
+div#body div.section {
+ margin: 10px 5px;
+ padding: 5px 10px;
+ border-left: 1px dashed;
+}
+
+div#body div.section h3 {
+ font-size: medium;
+ margin: 0.25em 0px 0.5em 0px;
+ padding: 0px;
+ padding-left: 0.5em;
+ border-left: 0.5em solid;
+ border-bottom: 1px dashed;
+}
+
+div#body div.section pre {
+ margin: 0.5em;
+ padding: 0.25em 0.5em;
+ border: 1px dashed;
+}
+
+div#body div.section table {
+ padding: 0.25em;
+ border-collapse: separate;
+ border-spacing: 0.5em 0.25em;
+}
+
+div#body div.section table tr .right {
+ text-align: right;
+}
+
+div#body div.section table tr th {
+ padding: 0.25em 0.25em;
+ border-bottom: 1px dashed;
+}
+
+div#body div.section table tr td {
+ padding: 0.25em 0.5em;
+ border-bottom: 1px dashed;
+}
+
+div#body div.section ul {
+ margin: 0em;
+ padding: 0.25em 0.75em;
+}
+
+div#body div.section ol {
+ margin: 0em;
+ padding: 0.25em 0.75em;
+}
+
+div#body div.section ul li {
+ list-style-position: inside;
+}
+

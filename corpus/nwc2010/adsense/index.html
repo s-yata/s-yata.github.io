@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>セクションターゲット - 日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="../index.css">
+ </head>
+ <body>
+  <h2>セクションターゲット - 日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="/corpus/nwc2010/">日本語ウェブコーパス 2010</a> /
+   <a href="">セクションターゲット</a>
+  </p>
+  <div id="body">
+   <table id="nav">
+    <tr>
+     <th>用例文書</th>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/htmls.xz">セクションターゲットを含む HTML 文書のアーカイブ</a><br>
+      圧縮時 41.2MiB，展開時 576MiB
+     </td>
+    </tr>
+    <tr>
+     <th rowspan="2">
+      タグ使用頻度<br>
+      TF・DF
+     </th>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/tf-df-tag.1.xz">DF 1 以上のタグ一覧</a><br>
+      圧縮時 1.65MiB，伸長時 16.1MiB
+     </td>
+    </tr>
+    <tr>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/tf-df-tag.10.xz">DF 10 以上のタグ一覧</a><br>
+      圧縮時 74.7KiB，伸長時 384KiB
+     </td>
+    </tr>
+   </table>
+   <div class="section">
+    <h3>概要</h3>
+    HTML アーカイブからセクションターゲットを含む HTML 文書のみを取り出し，さらにホストの重複も取り除いてからアーカイブにしました．用例文書は，コメントやタグの属性を取り除き，各文字を字種を示す記号で置き換えた内容になっています．タグ使用頻度については，用例文書におけるタグの出現頻度になっています．各タグについて，単純な出現頻度（TF: Term Frequency, Term = Tag）と出現文書数（DF: Document Frequency）がタブ区切りで保存されています．<br>
+    用例文書については，セクションターゲットの範囲を示すコメント（&lt;!-- google_ad_section_start --&gt;, &lt;!-- google_ad_section_start(weight=ignore) --&gt;, &lt;!-- google_ad_section_end --&gt;）を除き，宣言とコメントは削除してあります．その他のタグについては，class, id, name 以外の属性を取り除きました．テキスト要素については，script と style の中身を削除し，他の部分に対しては以下の置換を適用しています．
+    <table>
+     <tr>
+      <th>字種</th>
+      <th>置換後</th>
+      <th>置換前（x&ndash;y は x 以上 y 以下の範囲）</th>
+     </tr>
+     <tr>
+      <th>空白</td>
+      <td>' '</td>
+      <td>'\t', '\r', ' ', U+00A0, U+202F ,U+205F, U+3000, U+FEFF, U+2000&ndash;U+200B</td>
+     </tr>
+     <tr>
+      <th>改行</td>
+      <td>'\n'</td>
+      <td>'\n'</td>
+     </tr>
+     <tr>
+      <th>読点</td>
+      <td>','</td>
+      <td>',', U+3001, U+FF0C, U+FF64</td>
+     </tr>
+     <tr>
+      <th>句点</td>
+      <td>'.'</td>
+      <td>'.', U+3002, U+FF0E, U+FF61</td>
+     </tr>
+     <tr>
+      <th>数字</td>
+      <td>'0'</td>
+      <td>'0'-'9', U+FF10&ndash;U+FF19</td>
+     </tr>
+     <tr>
+      <th>大文字</td>
+      <td>'A'</td>
+      <td>'A'-'Z', U+FF21&ndash;U+FF3A</td>
+     </tr>
+     <tr>
+      <th>小文字</td>
+      <td>'a'</td>
+      <td>'a'-'z', U+FF41&ndash;U+FF5A</td>
+     </tr>
+     <tr>
+      <th>ひらがな</td>
+      <td>'h'</td>
+      <td>U+3040&ndash;U+309F</td>
+     </tr>
+     <tr>
+      <th>カタカナ</td>
+      <td>'k'</td>
+      <td>U+30A0&ndash;U+30FF, U+31F0&ndash;U+31FF, U+FF66&ndash;U+FF9F</td>
+     </tr>
+     <tr>
+      <th>漢字</td>
+      <td>'K'</td>
+      <td>U+3400&ndash;U+4DBF, U+4E00&ndash;U+9FFF, U+F900&ndash;U+FAFF, U+20000&ndash;U+2FA1F</td>
+     </tr>
+     <tr>
+      <th>その他</td>
+      <td>'x'</td>
+      <td>その他</td>
+     </tr>
+    </table>
+    タグのカウントにおいては，タグ・属性の名前を小文字に統一し，class, id, name 以外の属性を取り除きました．例えば，&lt;A HREF="index.html"&gt; は &lt;a&gt; としてカウントされていますが，&lt;a name="abc"&gt; と &lt;a&gt; は別々にカウントされています．オープンタグとクローズタグは別々にカウントされているので，&lt;a&gt; の代わりに &lt;/a&gt; の TF・DF を利用することも可能です．<br>
+   </div>
+   <div class="section">
+    <h3>利用条件</h3>
+    特にありません．二次配布も自由です．
+   </div>
+   <div class="section">
+    <h3>ダウンロード</h3>
+    それほど大きなファイルではないので，気軽にダウンロードできます．
+    <table>
+     <tr>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/htmls.xz">用例文書（41.2MiB）</a>
+      </td>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/tf-df-tag.1.xz">DF 1 以上のタグ一覧（1.65MiB）</a>
+      </td>
+      <td>
+       <a href="http://dist.s-yata.jp/corpus/nwc2010/adsense/tf-df-tag.10.xz">DF 10 以上のタグ一覧（74.7KiB）</a>
+      </td>
+     </tr>
+    </table>
+   </div>
+   <div class="section">
+    <h3>書式</h3>
+    用例文書については，サイズ行と本文が交互に保存されています．例えば，Python であれば以下のようにして読み込むことができます．以下の例では，サイズが保存されている行を読み込み，取得したサイズの本文を読み込むというループをファイルの終端にいたるまで継続しているだけです．タグ以外の '&lt;' と '&gt;' は文字参照に置き換えられているので，正規表現を利用すれば，簡単にタグとテキスト要素を切り分けることができます．
+    <pre>while sys.stdin:
+  size = sys.stdin.readline()
+  if not size:
+    break
+  size = int(size)
+  body = sys.stdin.read(size)</pre>
+    タグ使用頻度については，TF，DF，タグという順番で，水平タブが区切りになっています．以下のサンプルを見た方が分かりやすいと思います．
+   </div>
+   <div class="section">
+    <h3>サンプル</h3>
+    用例文書のサンプルです．サイズ行の直後が空行になっているのは，元の文書に空行が含まれていたことによる偶然の産物です．タイトルは字種を表す記号の並びに変換されています．
+    <pre>xz -cd htmls.xz | head -10
+10791
+    
+&lt;html&gt; 
+&lt;head&gt; 
+&lt;meta /&gt; 
+&lt;meta name="description" /&gt; 
+&lt;meta name="verify-v1" /&gt; 
+&lt;meta name="keywords" /&gt; 
+&lt;title&gt;KxhhhhxhKKKKh0K0KkkkkKKkkkKK! x kkkk x kkkkkAA&lt;/title&gt; 
+&lt;link&gt;</pre>
+    タグ使用頻度のサンプルです．TF，DF，タグという順番になっています．
+    <pre>$ xz -cd tf-df-tag.10.xz | sort -rnk 2 | head -5
+26944	26705	&lt;/title&gt;
+26935	26699	&lt;title&gt;
+3770558	26691	&lt;/a&gt;
+2992562	26676	&lt;a&gt;
+26937	26672	&lt;/head&gt;</pre>
+    <pre>$ xz -cd tf-df-tag.10.xz | sort -rnk 2 | head -1000 | tail -5
+639	243	&lt;img class="emoticon bleah" /&gt;
+243	243	&lt;input name="url" id="url" /&gt;
+243	243	&lt;div class="next_page_links_spacer"&gt;
+342	242	&lt;ul class="navi"&gt;
+478	240	&lt;div class="trackback"&gt;</pre>
+   </div>
+   <div class="section">
+    <h3>内容</h3>
+    用例文書に含まれる文書の数とタグの異なり数は以下のとおりです．
+    <table>
+     <tr>
+      <th>文書数</th>
+      <td class="right">26,725</td>
+     </tr>
+     <tr>
+      <th>タグの異なり数（DF 1 以上）</th>
+      <td class="right">410,463</td>
+     </tr>
+     <tr>
+      <th>タグの異なり数（DF 10 以上）</th>
+      <td class="right">51,133</td>
+     </tr>
+    </table>
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>

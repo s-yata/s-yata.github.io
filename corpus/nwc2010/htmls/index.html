@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>HTML アーカイブ - 日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="../index.css">
+ </head>
+ <body>
+  <h2>HTML アーカイブ - 日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="/corpus/nwc2010/">日本語ウェブコーパス 2010</a> /
+   <a href="">HTML アーカイブ</a>
+  </p>
+  <div id="body">
+   <div class="section">
+    <h3>概要</h3>
+    2010 年 6 月から 9 月にかけて収集された，約 1 億ウェブページ，圧縮時 197GB，展開時 3.25TB のアーカイブです．ウェブページの収集においては，<a href="http://sourceforge.jp/projects/ipadic/">ipadic-2.7.0</a> の見出し語を <a href="http://developer.yahoo.co.jp/">Yahoo! Web API</a> により検索し，検索結果に含まれるウェブページを収集の対象としました．結果として，特定のウェブページを起点にリンクを辿ることで作成されたアーカイブと比べると，偏りの少ないアーカイブになっていると思います．
+   </div>
+   <div class="section">
+    <h3>利用条件</h3>
+    2009 年度における著作権法の改正（<a href="http://www.bunka.go.jp/chosakuken/21_houkaisei.html">文化庁 | 著作権 | 著作権制度に関する情報 | 著作権制度の解説資料 | 最近の法改正について | 平成 21 年通常国会 著作権法改正等について</a>）に基づき，情報解析研究への利用に限定します．<br>
+    情報解析研究への利用に限定されるのであれば，所属組織などによらず，他の研究者との共有を制限することはありません．また，情報解析研究の成果については，著作権者の利益が害される程度が低ければ，自由に利用・配布しても問題ないと思います．
+   </div>
+   <div class="section">
+    <h3>ダウンロード</h3>
+    いろいろと無理です．
+   </div>
+   <div class="section">
+    <h3>Amazon EC2</h3>
+    <a href="http://aws.amazon.com/jp/ec2/">Amazon EC2</a> をご利用の方は，US East リージョンにおいて，HTML アーカイブを保存した <a href="http://aws.amazon.com/jp/ebs/">Amazon EBS</a> のスナップショットが利用できます．
+    <table>
+     <tr>
+      <th>Region</th>
+      <th>Name</th>
+      <th>Snapshot ID</th>
+      <th>Capacity</th>
+      <th>Description</th>
+     </tr>
+     <tr>
+      <td>US-East</td>
+      <td>nwc2010-htmls</td>
+      <td>snap-7c407a17</td>
+      <td>200GiB</td>
+      <td>Nihongo Web Corpus 2010 - HTML Archive (ext3)</td>
+     </tr>
+    </table>
+   ご利用を希望される方は，ページ下部のメールアドレス宛てに AWS Account Number をご連絡ください．上記のスナップショットから EBS を作成する権限をこちらで設定いたします．
+   </div>
+   <div class="section">
+    <h3>書式</h3>
+    検索により得られた各 URL について，URL，ステータスコード，HTTP ヘッダとメッセージボディ（HTML 文書）を以下の書式で保存しています．
+    <pre>URL
+ステータスコード
+HTTP ヘッダの長さ
+HTTP ヘッダ
+メッセージボディの長さ
+メッセージボディ</pre>
+    HTML アーカイブを構成する各ファイル htmls/XX/YYYYYYYY.xz には，展開時のサイズが 2GB より小さくなるように，上記の書式でウェブページを格納しています．また，圧縮時のサイズを小さくするため，URL による整列をおこなっています[1]．<a href="http://tukaani.org/xz/">XZ Utils</a>（xz -9e）の利用により，圧縮時のサイズは展開時の約 6% になっています．
+   </div>
+   <div class="section">
+    <h3>サンプル</h3>
+    以下のようなテキストが，連結された状態で各ファイルに保存されています．
+    <pre>http://www.example.com/
+200
+78
+Date: Wed, 22 Sep 2010 06:06:01 GMT
+Connection: close
+Content-Type: text/html
+88
+&lt;html&gt;
+ &lt;head&gt;
+  &lt;title&gt;Title&lt;/title&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+  Hello, world!
+ &lt;/body&gt;
+&lt;/html&gt;</pre>
+   </div>
+   <div class="section">
+    <h3>参考文献</h3>
+    [1] Paolo Ferragina and Giovanni Manzini. <a href="http://www.di.unipi.it/~ferragin/wsdm022.pdf">On Compressing the Textual Web</a>, <a href="http://www.wsdm-conference.org/2010/">WSDM 2010</a>, 2010.
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>

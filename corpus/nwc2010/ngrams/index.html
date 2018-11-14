@@ -1,0 +1,219 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>N-gram コーパス - 日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="../index.css">
+ </head>
+ <body>
+  <h2>N-gram コーパス - 日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="/corpus/nwc2010/">日本語ウェブコーパス 2010</a> /
+   <a href="">N-gram コーパス</a>
+  </p>
+  <div id="body">
+   <table id="nav">
+    <tr>
+     <th rowspan="3">形態素 N-gram</th>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over9/filelist">頻度 10 以上のファイルリスト</a>
+     </td>
+     <td>圧縮時 12.1GB，展開時 75.2GB</td>
+    </tr>
+    <tr>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over99/filelist">頻度 100 以上のファイルリスト</a>
+     </td>
+     <td>圧縮時 1.07GB，展開時 5.93GB</td>
+    </tr>
+    <tr>
+     <td>
+      <a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over999/filelist">頻度 1000 以上のファイルリスト</a>
+     </td>
+     <td>圧縮時 107MB，展開時 541MB</td>
+    </tr>
+    <tr>
+     <th rowspan="3">文字 N-gram</th>
+     <td><a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over9/filelist">頻度 10 以上のファイルリスト</a></td>
+     <td>圧縮時 11.8GB，展開時 81.7GB</td>
+    </tr>
+    <tr>
+     <td><a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over99/filelist">頻度 100 以上のファイルリスト</a></td>
+     <td>圧縮時 1.52GB，展開時 9.26GB</td>
+    </tr>
+    <tr>
+     <td><a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over999/filelist">頻度 1000 以上のファイルリスト</a></td>
+     <td>圧縮時 192MB，展開時 1.03GB</td>
+    </tr>
+   </table>
+   <div class="section">
+    <h3>概要</h3>
+    ウェブページに出現する形態素 N-gram と文字 N-gram を頻度とともに収録したコーパスです．各 N-gram コーパスには，頻度 10/100/1000 以上の 1-gram から 7-gram までが収録されています．<br>
+    N-gram コーパスの構築においては，<a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>と同様の前処理を施しています．句点・感嘆符・疑問符を文の区切りとして利用しているので，「モーニング娘。」や「Yahoo!」などの固有名詞については，不適切な文の区切りがおこなわれています．また，文の区切りは削除するようになっているため，コーパス中に句点・感嘆符・疑問符は出現しません．<br>
+    形態素 N-gram コーパス，文字 N-gram コーパスともに，文境界マーク（&lt;S&gt;，&lt;/S&gt;）は採用していますが，未知語トークン（&lt;UNK&gt;）は採用していません．また，文字 N-gram コーパスについては，半角空白をトークンの区切りとして用いるため，文中に出現する半角空白をトークンとして扱わないようにしました．英単語などが連結されている点にご注意ください．
+   </div>
+   <div class="section">
+    <h3>利用条件</h3>
+    特にありません．二次配布も自由です．
+   </div>
+   <div class="section">
+    <h3>ダウンロード</h3>
+    各 N-gram コーパスについて，構成ファイルのリストを提供しています．ファイルのサイズ・数ともに大きいので，手作業によるダウンロードは手間がかかります．手作業による誤りを防ぐためにも，ダウンロード用のソフトウェアを使うことをおすすめします．例えば，wget を使えば，ディレクトリの構成も含めて保存することができます．
+    <pre>$ wget -xnH -i filelist</pre>
+    形態素 N-gram のファイルリスト：<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over9/filelist">頻度 10 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over99/filelist">頻度 100 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/word/over999/filelist">頻度 1000 以上</a><br>
+    文字 N-gram のファイルリスト：<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over9/filelist">頻度 10 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over99/filelist">頻度 100 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over999/filelist">頻度 1000 以上</a><br>
+   </div>
+   <div class="section">
+    <h3>Amazon EC2</h3>
+    <a href="http://aws.amazon.com/jp/">Amazon AWS</a> のアカウントを持っている方であれば，N-gram コーパスを保存した <a href="http://aws.amazon.com/jp/ebs/">Amazon EBS</a> のスナップショットがご利用いただけます．ダウンロードするにはサイズが大きすぎるとか，とりあえず内容を確認したいというとき，<a href="http://aws.amazon.com/jp/ec2/">Amazon EC2</a> 上であれば，簡単に N-gram コーパスにアクセスできて便利です．
+    <table>
+     <tr>
+      <th>Region</th>
+      <th>Name</th>
+      <th>Snapshot ID</th>
+      <th>Capacity</th>
+      <th>Description</th>
+     </tr>
+     <tr>
+      <td>US-East</td>
+      <td>nwc2010-ngrams</td>
+      <td>snap-e4a9918f</td>
+      <td>30GiB</td>
+      <td>Nihongo Web Corpus 2010 - N-gram Corpus (ext3)</td>
+     </tr>
+    </table>
+   </div>
+   <div class="section">
+    <h3>書式</h3>
+    <a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>と同様に，Ngms/Ngm-KKKK.xz というファイルに 1000 万 N-gram ずつ格納しています．拡張子を見れば分かるように，各ファイルは xz により圧縮されているため，展開には <a href="http://tukaani.org/xz/">XZ Utils</a> が必要です．また，各行を構成するのは N 個のトークンと頻度であり，トークン同士の間は半角空白，トークンと頻度の間は水平タブになっています．
+   </div>
+   <div class="section">
+    <h3>サンプル</h3>
+    形態素 N-gram のサンプルです．
+    <pre>$ xz -cd 4gms/4gm-0043.xz | head -5
+周辺 の 売 地	75
+周辺 の 売 家	14
+周辺 の 売 物件	64
+周辺 の 売り 土地	65
+周辺 の 売り 地	12</pre>
+    文字 N-gram のサンプルです．
+    <pre>$ xz -cd 7gms/7gm-0073.xz | head -5
+会 的 常 識 に 欠 け	185
+会 的 常 識 に 照 ら	40
+会 的 常 識 の あ る	137
+会 的 常 識 の な い	52
+会 的 常 識 の 欠 如	58</pre>
+   </div>
+   <div class="section">
+    <h3>内容</h3>
+    形態素 N-gram コーパスに含まれる N-gram の異なり数です．
+    <table>
+     <tr>
+      <td></td>
+      <th>頻度 10 以上</th>
+      <th>頻度 100 以上</th>
+      <th>頻度 1000 以上</th>
+     </tr>
+     <tr>
+      <th>1-gram</th>
+      <td class="right">4,027,882</td>
+      <td class="right">894,405</td>
+      <td class="right">270,214</td>
+     </tr>
+     <tr>
+      <th>2-gram</th>
+      <td class="right">79,569,943</td>
+      <td class="right">16,912,785</td>
+      <td class="right">3,422,928</td>
+     </tr>
+     <tr>
+      <th>3-gram</th>
+      <td class="right">369,685,887</td>
+      <td class="right">51,401,622</td>
+      <td class="right">6,395,754</td>
+     </tr>
+     <tr>
+      <th>4-gram</th>
+      <td class="right">607,054,802</td>
+      <td class="right">57,191,326</td>
+      <td class="right">4,965,726</td>
+     </tr>
+     <tr>
+      <th>5-gram</th>
+      <td class="right">596,934,604</td>
+      <td class="right">41,693,785</td>
+      <td class="right">2,948,810</td>
+     </tr>
+     <tr>
+      <th>6-gram</th>
+      <td class="right">470,456,046</td>
+      <td class="right">26,618,140</td>
+      <td class="right">1,695,705</td>
+     </tr>
+     <tr>
+      <th>7-gram</th>
+      <td class="right">347,097,023</td>
+      <td class="right">16,901,591</td>
+      <td class="right">1,023,609</td>
+     </tr>
+    </table><br>
+    文字 N-gram コーパスに含まれる N-gram の異なり数です．
+    <table>
+     <tr>
+      <td>作成中</td>
+      <th>頻度 10 以上</th>
+      <th>頻度 100 以上</th>
+      <th>頻度 1000 以上</th>
+     </tr>
+     <tr>
+      <th>1-gram</th>
+      <td class="right">18,709</td>
+      <td class="right">11,873</td>
+      <td class="right">7,822</td>
+     </tr>
+     <tr>
+      <th>2-gram</th>
+      <td class="right">5,207,473</td>
+      <td class="right">2,459,929</td>
+      <td class="right">992,239</td>
+     </tr>
+     <tr>
+      <th>3-gram</th>
+      <td class="right">91,405,609</td>
+      <td class="right">25,711,287</td>
+      <td class="right">6,024,672</td>
+     </tr>
+     <tr>
+      <th>4-gram</th>
+      <td class="right">385,242,752</td>
+      <td class="right">70,564,608</td>
+      <td class="right">10,737,235</td>
+     </tr>
+     <tr>
+      <th>5-gram</th>
+      <td class="right">762,384,131</td>
+      <td class="right">99,004,573</td>
+      <td class="right">11,025,757</td>
+     </tr>
+     <tr>
+      <th>6-gram</th>
+      <td class="right">1,011,206,166</td>
+      <td class="right">100,819,467</td>
+      <td class="right">8,980,103</td>
+     </tr>
+     <tr>
+      <th>7-gram</th>
+      <td class="right">1,072,241,151</td>
+      <td class="right">86,194,515</td>
+      <td class="right">6,512,889</td>
+     </tr>
+    </table>
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="ja">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>テキストアーカイブ - 日本語ウェブコーパス 2010</title>
+  <link rel="stylesheet" type="text/css" href="../index.css">
+ </head>
+ <body>
+  <h2>テキストアーカイブ - 日本語ウェブコーパス 2010</h2>
+  <p id="path">
+   <a href="/">トップ</a> / <a href="/corpus/">コーパス</a> /
+   <a href="/corpus/nwc2010/">日本語ウェブコーパス 2010</a> /
+   <a href="">テキストアーカイブ</a>
+  </p>
+  <div id="body">
+   <div class="section">
+    <h3>概要</h3>
+    HTML アーカイブの文字コードを UTF-8 に統一してからタグを除去し，いくつかのフィルタリングを施すことにより得られた，圧縮時 69GB，展開時 396GB のアーカイブです．フィルタリングについては，<a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>の前処理を真似したので，NFKC への正規化，句点・感嘆符・疑問符を区切りとする文抽出，文の長さや文字の種類・割合による除外ルールの適用という内容になっています．
+   </div>
+   <div class="section">
+    <h3>利用条件</h3>
+    2009 年度における著作権法の改正（<a href="http://www.bunka.go.jp/chosakuken/21_houkaisei.html">文化庁 | 著作権 | 著作権制度に関する情報 | 著作権制度の解説資料 | 最近の法改正について | 平成 21 年通常国会 著作権法改正等について</a>）に基づき，情報解析研究への利用に限定します．<br>
+    情報解析研究への利用に限定されるのであれば，所属組織などによらず，他の研究者との共有を制限することはありません．また，情報解析研究の成果については，著作権者の利益が害される程度が低ければ，自由に利用・配布しても問題ないと思います．
+   </div>
+   <div class="section">
+    <h3>ダウンロード</h3>
+    いろいろと無理です．
+   </div>
+   <div class="section">
+    <h3>Amazon EC2</h3>
+    <a href="http://aws.amazon.com/jp/ec2/">Amazon EC2</a> をご利用の方は，US East リージョンにおいて，タグなしテキストを保存した <a href="http://aws.amazon.com/jp/ebs/">Amazon EBS</a> のスナップショットが利用できます．
+    <table>
+     <tr>
+      <th>Region</th>
+      <th>Name</th>
+      <th>Snapshot ID</th>
+      <th>Capacity</th>
+      <th>Description</th>
+     </tr>
+     <tr>
+      <td>US-East</td>
+      <td>nwc2010-texts</td>
+      <td>snap-4096ae2b</td>
+      <td>70GiB</td>
+      <td>Nihongo Web Corpus 2010 - Plain Text (ext3)</td>
+     </tr>
+    </table>
+   ご利用を希望される方は，ページ下部のメールアドレス宛てに AWS Account Number をご連絡ください．上記のスナップショットから EBS を作成する権限をこちらで設定いたします．
+   </div>
+   <div class="section">
+    <h3>書式</h3>
+    空行を文書の区切りとするテキストになっています．アーカイブを構成する各ファイル texts/XX/YYYYYYYY.xz には，展開時のサイズが 2GB より小さくなるように，テキストを格納しています．<a href="http://tukaani.org/xz/">XZ Utils</a>（xz -9e）の利用により，圧縮時のサイズは展開時の約 17% になっています．
+   </div>
+   <div class="section">
+    <h3>サンプル</h3>
+    各ファイルの内容は，以下のようになっています．
+    <pre>文書 1，文 1
+文書 1，文 2
+
+文書 2，文 1
+
+
+文書 4，文 1
+...</pre>
+   </div>
+  </div>
+  <p>
+   E-mail:
+  ‮moc.liamg＠atay.umusus‭
+  </p>
+ </body>
+</html>
