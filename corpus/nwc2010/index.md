@@ -11,9 +11,9 @@ N-gram コーパスについては，テキストアーカイブに出現する�
 
 名前|概要
 --|--
-[HTML アーカイブ](htmls)|約 1 億件の HTML 文書（圧縮時 197GB，展開時 3.25TB）
-[テキストアーカイブ](texts)|HTML アーカイブから抽出されたテキスト（圧縮時 69GB，展開時 396GB）
-[N-gram コーパス](ngrams)|形態素 N-gram（圧縮時 12.1GB，展開時 75.2GB），文字 N-gram（圧縮時 11.8GB，展開時 81.7GB）
+[HTML アーカイブ](htmls)|約 1 億件の HTML 文書<br />圧縮時 197GB，展開時 3.25TB
+[テキストアーカイブ](texts)|HTML アーカイブから抽出されたテキスト<br />圧縮時 69GB，展開時 396GB
+[N-gram コーパス](ngrams)|形態素 N-gram：圧縮時 12.1GB，展開時 75.2GB<br />文字 N-gram：圧縮時 11.8GB，展開時 81.7GB
 [タグ使用頻度](tags)|HTML タグの使用頻度（TF・DF）
 [セクションターゲット](adsense)|セクションターゲット（AdSence）の用例
 [ツールキット](https://code.google.com/archive/p/nwc-toolkit/)|テキストアーカイブや N-gram コーパスの作成ツール
