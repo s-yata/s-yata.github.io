@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Documentation
+title: Docs
 ---
 
 ライブラリの解説記事です．
