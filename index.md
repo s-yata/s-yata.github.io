@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Home
 ---
 
 内部リンク|概要
