@@ -13,9 +13,18 @@
    <a href="">テキストアーカイブ</a>
   </p>
   <div id="body">
+   <table id="nav">
+    <tr>
+     <th>テキストアーカイブ</th>
+     <td>
+      <a href="filelist">ファイルリスト</a>
+     </td>
+     <td>ファイル数 194，圧縮時 69GB，展開時 396GB</td>
+    </tr>
+   </table>
    <div class="section">
     <h3>概要</h3>
-    HTML アーカイブの文字コードを UTF-8 に統一してからタグを除去し，いくつかのフィルタリングを施すことにより得られた，圧縮時 69GB，展開時 396GB のアーカイブです．フィルタリングについては，<a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>の前処理を真似したので，NFKC への正規化，句点・感嘆符・疑問符を区切りとする文抽出，文の長さや文字の種類・割合による除外ルールの適用という内容になっています．
+    HTML アーカイブの文字コードを UTF-8 に統一してからタグを除去し，いくつかのフィルタリングを施すことにより得られた，圧縮時 69GB，展開時 396GB のアーカイブです．フィルタリングについては，<a href="https://www.gsk.or.jp/catalog/gsk2007-c/">Google N-gram コーパス</a>の前処理を真似したので，NFKC への正規化，句点・感嘆符・疑問符を区切りとする文抽出，文の長さや文字の種類・割合による除外ルールの適用という内容になっています．
    </div>
    <div class="section">
     <h3>利用条件</h3>
@@ -24,32 +33,13 @@
    </div>
    <div class="section">
     <h3>ダウンロード</h3>
-    いろいろと無理です．
-   </div>
-   <div class="section">
-    <h3>Amazon EC2</h3>
-    <a href="https://aws.amazon.com/jp/ec2/">Amazon EC2</a> をご利用の方は，米国東部（バージニア北部）us-east-1 リージョンにおいて，タグなしテキストを保存した <a href="https://aws.amazon.com/jp/ebs/">Amazon EBS</a> のスナップショットが利用できます．
-    <table>
-     <tr>
-      <th>Region</th>
-      <th>Name</th>
-      <th>Snapshot ID</th>
-      <th>Capacity</th>
-      <th>Description</th>
-     </tr>
-     <tr>
-      <td>us-east-1</td>
-      <td>nwc2010-texts</td>
-      <td>snap-4096ae2b</td>
-      <td>70GiB</td>
-      <td>Nihongo Web Corpus 2010 - Plain Text (ext3)</td>
-     </tr>
-    </table>
-   ご利用を希望される方は，ページ下部のメールアドレス宛てに AWS Account Number をご連絡ください．上記のスナップショットから EBS を作成する権限をこちらで設定いたします．
+    <a href="filelist">ファイルリスト</a>は常に提供していますが，テキストアーカイブをいつでもダウンロードできるわけではありません．リクエストがあったときだけダウンロードできるようにします．ご利用を希望される方は，ページ下部のメールアドレス宛てにご連絡ください．<br>
+    ファイルのサイズ・数ともに大きいので，手作業によるダウンロードは手間がかかります．手作業による誤りを防ぐためにも，ダウンロード用のソフトウェアを使うことをおすすめします．例えば，wget を使えば，構成ファイルをまとめてダウンロードできます．
+    <pre>$ wget -i filelist</pre>
    </div>
    <div class="section">
     <h3>書式</h3>
-    空行を文書の区切りとするテキストになっています．アーカイブを構成する各ファイル texts/XX/YYYYYYYY.xz には，展開時のサイズが 2GB より小さくなるように，テキストを格納しています．<a href="https://tukaani.org/xz/">XZ Utils</a>（xz -9e）の利用により，圧縮時のサイズは展開時の約 17% になっています．
+    空行を文書の区切りとするテキストになっています．アーカイブを構成する各ファイル XXXXXXXX.xz には，展開時のサイズが 2GB より小さくなるように，テキストを格納しています．<a href="https://tukaani.org/xz/">XZ Utils</a>（xz -9e）の利用により，圧縮時のサイズは展開時の約 17% になっています．
    </div>
    <div class="section">
     <h3>サンプル</h3>
