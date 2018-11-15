@@ -50,7 +50,7 @@
    <div class="section">
     <h3>概要</h3>
     ウェブページに出現する形態素 N-gram と文字 N-gram を頻度とともに収録したコーパスです．各 N-gram コーパスには，頻度 10/100/1000 以上の 1-gram から 7-gram までが収録されています．<br>
-    N-gram コーパスの構築においては，<a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>と同様の前処理を施しています．句点・感嘆符・疑問符を文の区切りとして利用しているので，「モーニング娘。」や「Yahoo!」などの固有名詞については，不適切な文の区切りがおこなわれています．また，文の区切りは削除するようになっているため，コーパス中に句点・感嘆符・疑問符は出現しません．<br>
+    N-gram コーパスの構築においては，<a href="https://www.gsk.or.jp/catalog/gsk2007-c/">Google N-gram コーパス</a>と同様の前処理を施しています．句点・感嘆符・疑問符を文の区切りとして利用しているので，「モーニング娘。」や「Yahoo!」などの固有名詞については，不適切な文の区切りがおこなわれています．また，文の区切りは削除するようになっているため，コーパス中に句点・感嘆符・疑問符は出現しません．<br>
     形態素 N-gram コーパス，文字 N-gram コーパスともに，文境界マーク（&lt;S&gt;，&lt;/S&gt;）は採用していますが，未知語トークン（&lt;UNK&gt;）は採用していません．また，文字 N-gram コーパスについては，半角空白をトークンの区切りとして用いるため，文中に出現する半角空白をトークンとして扱わないようにしました．英単語などが連結されている点にご注意ください．
    </div>
    <div class="section">
@@ -65,28 +65,8 @@
     文字 N-gram のファイルリスト：<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over9/filelist">頻度 10 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over99/filelist">頻度 100 以上</a>，<a href="http://dist.s-yata.jp/corpus/nwc2010/ngrams/char/over999/filelist">頻度 1000 以上</a><br>
    </div>
    <div class="section">
-    <h3>Amazon EC2</h3>
-    <a href="http://aws.amazon.com/jp/">Amazon AWS</a> のアカウントを持っている方であれば，N-gram コーパスを保存した <a href="http://aws.amazon.com/jp/ebs/">Amazon EBS</a> のスナップショットがご利用いただけます．ダウンロードするにはサイズが大きすぎるとか，とりあえず内容を確認したいというとき，<a href="http://aws.amazon.com/jp/ec2/">Amazon EC2</a> 上であれば，簡単に N-gram コーパスにアクセスできて便利です．
-    <table>
-     <tr>
-      <th>Region</th>
-      <th>Name</th>
-      <th>Snapshot ID</th>
-      <th>Capacity</th>
-      <th>Description</th>
-     </tr>
-     <tr>
-      <td>US-East</td>
-      <td>nwc2010-ngrams</td>
-      <td>snap-e4a9918f</td>
-      <td>30GiB</td>
-      <td>Nihongo Web Corpus 2010 - N-gram Corpus (ext3)</td>
-     </tr>
-    </table>
-   </div>
-   <div class="section">
     <h3>書式</h3>
-    <a href="http://www.gsk.or.jp/catalog/GSK2007-C/GSK2007C_README.utf8.txt">Google N-gram コーパス</a>と同様に，Ngms/Ngm-KKKK.xz というファイルに 1000 万 N-gram ずつ格納しています．拡張子を見れば分かるように，各ファイルは xz により圧縮されているため，展開には <a href="http://tukaani.org/xz/">XZ Utils</a> が必要です．また，各行を構成するのは N 個のトークンと頻度であり，トークン同士の間は半角空白，トークンと頻度の間は水平タブになっています．
+    <a href="https://www.gsk.or.jp/catalog/gsk2007-c/">Google N-gram コーパス</a>と同様に，Ngms/Ngm-KKKK.xz というファイルに 1000 万 N-gram ずつ格納しています．拡張子を見れば分かるように，各ファイルは xz により圧縮されているため，展開には <a href="https://tukaani.org/xz/">XZ Utils</a> が必要です．また，各行を構成するのは N 個のトークンと頻度であり，トークン同士の間は半角空白，トークンと頻度の間は水平タブになっています．
    </div>
    <div class="section">
     <h3>サンプル</h3>
